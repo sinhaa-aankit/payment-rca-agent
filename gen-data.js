@@ -14,6 +14,8 @@ const CAUSES = [
     "NETWORK_ERROR",
 ]
 
+const TAXONOMY = JSON.parse(fs.readFileSync("data/taxonomy.json", "utf8"));
+
 const SYSTEM =
     "You generate realistic SYNTHETIC test data for a generic bank payment system. " +
     "Output ONLY a valid JSON array. No markdown, no code fences, no explanation.";
@@ -35,7 +37,10 @@ Each record: { "amount": number, "currency": "INR", "status": one of "RJCT","FAI
 Rules:
 - First 3 records "easy": clues are obvious in the logs.
 - Last 2 records "hard": clues are indirect or partly misleading.
-- NEVER write the words "${cause}" or its obvious synonyms directly in the logs or messages.`,
+- NEVER write the words "${cause}" or its obvious synonyms directly in the logs or messages.
+- Definition of ${cause}: ${TAXONOMY[cause]}
+- Other possible causes (the record must NOT fit these better): ${JSON.stringify(TAXONOMY)}
+- Hard records may contain misleading clues, but an expert applying the definitions must still clearly pick ${cause}.`,
             }
         ]
     });

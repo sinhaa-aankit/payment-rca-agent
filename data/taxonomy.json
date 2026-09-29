@@ -1,0 +1,8 @@
+{
+  "CBS_TIMEOUT": "Connection to core banking succeeded, but core did not respond in time.",
+  "INSUFFICIENT_BALANCE": "Debit declined because the remitter's available balance is lower than the amount.",
+  "DUPLICATE_PAYMENT": "A payment with the same reference, key, or identical details was already processed.",
+  "INVALID_BENEFICIARY": "Beneficiary account does not exist, is inactive, or name/account do not match.",
+  "CONFIG_ERROR": "A missing or wrong configuration, mapping, or setting caused the failure.",
+  "NETWORK_ERROR": "The connection itself failed: DNS, refused, reset, unreachable, or bad gateway."
+}

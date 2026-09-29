@@ -1,16 +1,17 @@
 [
   {
-    "amount": 15230.5,
+    "amount": 15230,
     "currency": "INR",
-    "status": "RJCT",
-    "errorCode": "NPCI_04",
-    "errorMessage": "Transaction rejected - no response received from core system within allowed processing window",
+    "status": "FAIL",
+    "errorCode": "E_CORE_NORESP",
+    "errorMessage": "Core banking did not acknowledge the debit request within the expected window.",
     "logs": [
-      "2024-03-11T09:12:01.102Z INFO  PaymentGateway - Received debit request TXN_88213 for amount 15230.50",
-      "2024-03-11T09:12:01.340Z INFO  CoreAdapter - Forwarding request to core banking module, ref=88213",
-      "2024-03-11T09:12:16.410Z WARN  CoreAdapter - Still awaiting acknowledgement from core module for ref=88213",
-      "2024-03-11T09:12:31.500Z ERROR CoreAdapter - No acknowledgement received after 30000ms wait, aborting request",
-      "2024-03-11T09:12:31.622Z ERROR PaymentGateway - TXN_88213 marked RJCT: core module unresponsive"
+      "2024-03-11T10:22:01Z INFO PaymentGateway: Received transfer request TXN10023",
+      "2024-03-11T10:22:02Z INFO CoreConnector: Connection to core banking established successfully",
+      "2024-03-11T10:22:02Z INFO CoreConnector: Debit instruction forwarded to core system",
+      "2024-03-11T10:22:32Z WARN CoreConnector: No response received from core after 30s",
+      "2024-03-11T10:22:33Z ERROR PaymentGateway: Aborting transaction, core response not received in time",
+      "2024-03-11T10:22:33Z INFO PaymentGateway: Marking transaction as FAIL"
     ],
     "expected": {
       "rootCause": "CBS_TIMEOUT",
@@ -19,18 +20,18 @@
     "id": "PAY-0001"
   },
   {
-    "amount": 4899,
+    "amount": 8750.5,
     "currency": "INR",
-    "status": "FAIL",
-    "errorCode": "ISO20022_508",
-    "errorMessage": "Payment failed - core banking response not received in configured wait period",
+    "status": "RJCT",
+    "errorCode": "E_CORE_STALL",
+    "errorMessage": "Core system connection stayed open but no acknowledgement was returned before the cutoff.",
     "logs": [
-      "2024-03-11T14:02:45.001Z INFO  TxnProcessor - Initiating fund transfer TXN_55021",
-      "2024-03-11T14:02:45.220Z INFO  CBSConnector - Sending debit instruction to core banking service",
-      "2024-03-11T14:03:00.230Z WARN  CBSConnector - Response delayed beyond 15000ms threshold for TXN_55021",
-      "2024-03-11T14:03:15.240Z WARN  CBSConnector - Retrying connection to core banking service, attempt 2",
-      "2024-03-11T14:03:30.250Z ERROR CBSConnector - Core service did not respond after retries, closing session",
-      "2024-03-11T14:03:30.400Z ERROR TxnProcessor - TXN_55021 failed due to unresponsive backend"
+      "2024-03-12T14:05:10Z INFO PaymentGateway: TXN20044 initiated for beneficiary A/C 4021xxxx",
+      "2024-03-12T14:05:11Z INFO CoreConnector: Socket to core banking opened, handshake OK",
+      "2024-03-12T14:05:11Z INFO CoreConnector: Sending debit posting request",
+      "2024-03-12T14:05:41Z WARN CoreConnector: Awaiting core reply, elapsed 30000ms, no data",
+      "2024-03-12T14:05:45Z ERROR CoreConnector: Giving up wait on core reply, closing session",
+      "2024-03-12T14:05:45Z ERROR PaymentGateway: Transaction rejected due to unacknowledged core response"
     ],
     "expected": {
       "rootCause": "CBS_TIMEOUT",
@@ -39,17 +40,18 @@
     "id": "PAY-0002"
   },
   {
-    "amount": 102345.75,
+    "amount": 42000,
     "currency": "INR",
     "status": "PDNG",
-    "errorCode": "CBS_502",
-    "errorMessage": "Pending - delayed acknowledgement from core banking module",
+    "errorCode": "E_CORE_SLOW",
+    "errorMessage": "Core banking accepted the request but processing exceeded the allowed response duration.",
     "logs": [
-      "2024-03-11T18:20:10.900Z INFO  SettlementEngine - Processing high-value transfer TXN_99871",
-      "2024-03-11T18:20:11.050Z INFO  CoreLink - Dispatched request to core banking interface",
-      "2024-03-11T18:20:41.075Z WARN  CoreLink - No response after 30000ms, marking as pending",
-      "2024-03-11T18:20:41.200Z WARN  SettlementEngine - TXN_99871 status set to PDNG pending manual reconciliation",
-      "2024-03-11T18:21:05.300Z INFO  CoreLink - Awaiting delayed callback from core module, still unresolved"
+      "2024-03-13T09:15:00Z INFO PaymentGateway: TXN30011 payment request queued",
+      "2024-03-13T09:15:01Z INFO CoreConnector: TCP connection to core banking succeeded",
+      "2024-03-13T09:15:01Z INFO CoreConnector: Request payload sent, waiting for core status",
+      "2024-03-13T09:15:31Z WARN CoreConnector: Core has not returned status after 30 seconds",
+      "2024-03-13T09:15:46Z WARN CoreConnector: Still waiting, 45 seconds elapsed, no response",
+      "2024-03-13T09:15:46Z ERROR PaymentGateway: Marking payment as pending, core response window exceeded"
     ],
     "expected": {
       "rootCause": "CBS_TIMEOUT",
@@ -58,18 +60,18 @@
     "id": "PAY-0003"
   },
   {
-    "amount": 27650,
+    "amount": 12999.99,
     "currency": "INR",
     "status": "PARK",
-    "errorCode": "NPCI_91",
-    "errorMessage": "Payment parked - processing delay encountered during settlement confirmation",
+    "errorCode": "E_TXN_STUCK",
+    "errorMessage": "Transaction could not be finalized as downstream system did not return a confirmation.",
     "logs": [
-      "2024-03-12T07:45:00.100Z INFO  RoutingService - Routing TXN_31022 to issuer network",
-      "2024-03-12T07:45:00.340Z INFO  RoutingService - Core bank acknowledged receipt of transaction",
-      "2024-03-12T07:45:20.500Z WARN  SettlementConfirm - Confirmation callback not yet received for TXN_31022",
-      "2024-03-12T07:45:50.600Z WARN  SettlementConfirm - Extended wait continuing, internal watchdog engaged",
-      "2024-03-12T07:46:20.700Z ERROR SettlementConfirm - Watchdog forced closure of pending confirmation cycle",
-      "2024-03-12T07:46:20.800Z INFO  RoutingService - TXN_31022 parked pending manual review"
+      "2024-03-14T11:00:05Z INFO PaymentGateway: TXN40077 received, beneficiary account validated successfully",
+      "2024-03-14T11:00:06Z INFO AuthService: Debit authorization approved, balance sufficient",
+      "2024-03-14T11:00:06Z INFO CoreConnector: Session with core banking opened normally",
+      "2024-03-14T11:00:07Z INFO CoreConnector: Posting instruction dispatched to core",
+      "2024-03-14T11:00:37Z WARN CoreConnector: Confirmation from core not yet received, retry counter at 1",
+      "2024-03-14T11:00:52Z ERROR PaymentGateway: Parking transaction, no final status returned by downstream core module"
     ],
     "expected": {
       "rootCause": "CBS_TIMEOUT",
@@ -78,18 +80,18 @@
     "id": "PAY-0004"
   },
   {
-    "amount": 8890.25,
+    "amount": 5600,
     "currency": "INR",
-    "status": "RJCT",
-    "errorCode": "GEN_99",
-    "errorMessage": "Transaction rejected - unable to confirm final debit status",
+    "status": "FAIL",
+    "errorCode": "E_UNRESOLVED_STATE",
+    "errorMessage": "Transaction outcome could not be determined because the last processing step never completed.",
     "logs": [
-      "2024-03-12T11:10:05.010Z INFO  ValidationService - Account and balance checks passed for TXN_74510",
-      "2024-03-12T11:10:05.220Z INFO  DebitProcessor - Forwarding debit instruction to backend module",
-      "2024-03-12T11:10:20.330Z WARN  DebitProcessor - Backend module thread still waiting on response, cycle 1",
-      "2024-03-12T11:10:35.440Z WARN  DebitProcessor - Backend module thread still waiting on response, cycle 2",
-      "2024-03-12T11:10:50.550Z ERROR DebitProcessor - Giving up wait on backend module response, releasing thread",
-      "2024-03-12T11:10:50.700Z ERROR ValidationService - TXN_74510 rejected: final debit confirmation indeterminate"
+      "2024-03-15T16:40:00Z INFO PaymentGateway: TXN50091 initiated, network route to core resolved via primary link",
+      "2024-03-15T16:40:00Z INFO NetworkMonitor: Minor packet jitter observed on link, within tolerance",
+      "2024-03-15T16:40:01Z INFO CoreConnector: Connection established, three-way handshake completed",
+      "2024-03-15T16:40:01Z INFO CoreConnector: Debit request handed off to core processing queue",
+      "2024-03-15T16:41:01Z WARN CoreConnector: Processing queue status still 'IN_PROGRESS' after 60 seconds",
+      "2024-03-15T16:41:05Z ERROR PaymentGateway: Closing transaction as failed, core never returned a final processing result"
     ],
     "expected": {
       "rootCause": "CBS_TIMEOUT",
@@ -98,18 +100,17 @@
     "id": "PAY-0005"
   },
   {
-    "amount": 15200,
+    "amount": 45230,
     "currency": "INR",
     "status": "RJCT",
-    "errorCode": "RC051",
-    "errorMessage": "Transaction declined by issuer bank",
+    "errorCode": "E051",
+    "errorMessage": "Transaction declined - funds not adequate to cover debit",
     "logs": [
-      "2024-03-11T09:12:01.102Z INFO [PaymentGateway] Received debit request for txn TXN73920 amount=15200.00",
-      "2024-03-11T09:12:01.340Z INFO [CoreBanking] Fetching account balance for A/C 004512xxxx",
-      "2024-03-11T09:12:01.512Z DEBUG [CoreBanking] Available balance=9800.00, Requested amount=15200.00",
-      "2024-03-11T09:12:01.600Z WARN [CoreBanking] Balance check failed, ledger cannot cover requested amount",
-      "2024-03-11T09:12:01.720Z ERROR [PaymentGateway] Issuer response code=51 received, transaction declined",
-      "2024-03-11T09:12:01.800Z INFO [PaymentGateway] Txn TXN73920 marked as RJCT"
+      "2024-03-11T09:14:22.101Z INFO [PaymentGateway] Received payment request ref=TXN88213 amount=45230.00",
+      "2024-03-11T09:14:22.340Z INFO [CoreBanking] Account lookup successful for acc=XXXX4521",
+      "2024-03-11T09:14:22.512Z DEBUG [CoreBanking] Available balance=12045.50 requested=45230.00",
+      "2024-03-11T09:14:22.689Z ERROR [CoreBanking] Debit rejected - available funds lower than requested amount",
+      "2024-03-11T09:14:22.700Z INFO [PaymentGateway] Marking transaction ref=TXN88213 as RJCT"
     ],
     "expected": {
       "rootCause": "INSUFFICIENT_BALANCE",
@@ -118,18 +119,18 @@
     "id": "PAY-0006"
   },
   {
-    "amount": 5000,
+    "amount": 78900.5,
     "currency": "INR",
     "status": "FAIL",
-    "errorCode": "NPCI_51",
-    "errorMessage": "Debit declined by beneficiary bank",
+    "errorCode": "BAL_LOW",
+    "errorMessage": "Remitter account cannot cover the transaction value",
     "logs": [
-      "2024-03-12T14:02:11.001Z INFO [UPIProcessor] Initiating debit for txn UPI55321 amount=5000.00",
-      "2024-03-12T14:02:11.210Z DEBUG [NPCI] Forwarding request to remitter bank",
-      "2024-03-12T14:02:11.480Z DEBUG [RemitterBank] Ledger balance=3120.50 before debit",
-      "2024-03-12T14:02:11.520Z ERROR [RemitterBank] Debit amount 5000.00 exceeds available ledger balance 3120.50",
-      "2024-03-12T14:02:11.600Z INFO [NPCI] Response code 51 returned to switch",
-      "2024-03-12T14:02:11.650Z INFO [UPIProcessor] Txn UPI55321 status set to FAIL"
+      "2024-03-12T14:02:10.001Z INFO [DebitService] Processing debit request ref=TXN99021",
+      "2024-03-12T14:02:10.150Z DEBUG [DebitService] Fetching current account balance for acc=XXXX7789",
+      "2024-03-12T14:02:10.302Z DEBUG [DebitService] Balance retrieved: 34210.00",
+      "2024-03-12T14:02:10.303Z DEBUG [DebitService] Transaction amount: 78900.50",
+      "2024-03-12T14:02:10.450Z ERROR [DebitService] Shortfall detected - unable to complete debit, balance below transaction value",
+      "2024-03-12T14:02:10.470Z INFO [DebitService] Transaction ref=TXN99021 marked as FAIL"
     ],
     "expected": {
       "rootCause": "INSUFFICIENT_BALANCE",
@@ -138,17 +139,18 @@
     "id": "PAY-0007"
   },
   {
-    "amount": 25000,
+    "amount": 15600,
     "currency": "INR",
     "status": "RJCT",
-    "errorCode": "BAL_CHK_FAIL",
-    "errorMessage": "Account balance check failed prior to debit",
+    "errorCode": "ERR_FUNDS",
+    "errorMessage": "Payment could not be processed due to low account funds",
     "logs": [
-      "2024-03-13T18:45:00.100Z INFO [PaymentEngine] Processing NEFT request NEFT88213 amount=25000.00",
-      "2024-03-13T18:45:00.220Z DEBUG [LedgerService] Current ledger balance=12450.75, Hold amount=0.00",
-      "2024-03-13T18:45:00.300Z WARN [LedgerService] Debit amount 25000.00 greater than usable ledger balance 12450.75",
-      "2024-03-13T18:45:00.410Z ERROR [PaymentEngine] Balance validation failed for account, rejecting transaction",
-      "2024-03-13T18:45:00.500Z INFO [PaymentEngine] Txn NEFT88213 marked as RJCT with code BAL_CHK_FAIL"
+      "2024-03-13T08:45:00.010Z INFO [PaymentOrchestrator] New request ref=TXN44532 amount=15600.00 currency=INR",
+      "2024-03-13T08:45:00.220Z INFO [AccountService] Validating remitter account acc=XXXX3301",
+      "2024-03-13T08:45:00.410Z DEBUG [AccountService] Available balance=8900.25",
+      "2024-03-13T08:45:00.412Z DEBUG [AccountService] Required amount=15600.00",
+      "2024-03-13T08:45:00.600Z WARN [AccountService] Insufficient funds in source account, rejecting transaction",
+      "2024-03-13T08:45:00.610Z INFO [PaymentOrchestrator] ref=TXN44532 status set to RJCT"
     ],
     "expected": {
       "rootCause": "INSUFFICIENT_BALANCE",
@@ -157,18 +159,18 @@
     "id": "PAY-0008"
   },
   {
-    "amount": 8000,
+    "amount": 92500,
     "currency": "INR",
     "status": "PARK",
-    "errorCode": "GEN_DECLINE",
+    "errorCode": "E204",
     "errorMessage": "Transaction parked pending manual review",
     "logs": [
-      "2024-03-14T11:20:03.001Z INFO [SwitchEngine] Txn SW90011 received, amount=8000.00, retry_count=0",
-      "2024-03-14T11:20:03.150Z WARN [NetworkMonitor] Slight latency detected on link B, 210ms",
-      "2024-03-14T11:20:03.400Z DEBUG [CoreBanking] Snapshot fetched: acct_balance=6100.00, pending_debits=0.00",
-      "2024-03-14T11:20:03.600Z INFO [SwitchEngine] Retrying txn due to non-conclusive response from core",
-      "2024-03-14T11:20:04.900Z ERROR [SwitchEngine] Core returned generic decline code 05 after retry",
-      "2024-03-14T11:20:05.000Z INFO [SwitchEngine] Txn SW90011 parked for manual reconciliation"
+      "2024-03-14T11:20:05.100Z INFO [PaymentGateway] Request received ref=TXN55810 amount=92500.00",
+      "2024-03-14T11:20:05.340Z INFO [CoreBanking] Connecting to ledger service for account validation",
+      "2024-03-14T11:20:05.890Z DEBUG [CoreBanking] Ledger response received in 550ms, status=OK",
+      "2024-03-14T11:20:06.010Z DEBUG [CoreBanking] Account status=ACTIVE, KYC=VERIFIED",
+      "2024-03-14T11:20:06.200Z DEBUG [CoreBanking] Balance check: current=41200.00, hold_amount=92500.00, deficit noted",
+      "2024-03-14T11:20:06.350Z INFO [PaymentGateway] Transaction placed in PARK queue for review ref=TXN55810"
     ],
     "expected": {
       "rootCause": "INSUFFICIENT_BALANCE",
@@ -177,18 +179,18 @@
     "id": "PAY-0009"
   },
   {
-    "amount": 120000,
+    "amount": 63400.75,
     "currency": "INR",
     "status": "PDNG",
-    "errorCode": "AUTH_TIMEOUT",
-    "errorMessage": "Authorization response not received within SLA window",
+    "errorCode": "E317",
+    "errorMessage": "Transaction pending - unable to finalize debit leg",
     "logs": [
-      "2024-03-15T20:05:12.010Z INFO [RTGSProcessor] Txn RTGS20344 submitted, amount=120000.00",
-      "2024-03-15T20:05:12.300Z WARN [CoreBankingBridge] Core banking system reporting high load, response delayed",
-      "2024-03-15T20:05:13.500Z DEBUG [CoreBankingBridge] Interim ledger snapshot: available=45230.00",
-      "2024-03-15T20:05:14.800Z INFO [RTGSProcessor] Awaiting authorization response from core, retry scheduled",
-      "2024-03-15T20:05:20.000Z ERROR [RTGSProcessor] No authorization received within 8s window, marking txn as pending",
-      "2024-03-15T20:05:20.100Z INFO [RTGSProcessor] Txn RTGS20344 status updated to PDNG, escalation queued"
+      "2024-03-15T16:33:12.001Z INFO [PaymentEngine] Initiating transfer ref=TXN67042 amount=63400.75",
+      "2024-03-15T16:33:12.210Z INFO [NetworkGateway] Beneficiary bank connection established successfully",
+      "2024-03-15T16:33:12.450Z DEBUG [NetworkGateway] Beneficiary validation passed, account active",
+      "2024-03-15T16:33:12.680Z DEBUG [CoreBanking] Retrieving remitter account snapshot acc=XXXX9012",
+      "2024-03-15T16:33:12.900Z WARN [CoreBanking] Snapshot shows usable balance 29875.00 against pending debit request 63400.75",
+      "2024-03-15T16:33:13.100Z INFO [PaymentEngine] Debit leg could not be confirmed, transaction held as PDNG ref=TXN67042"
     ],
     "expected": {
       "rootCause": "INSUFFICIENT_BALANCE",
@@ -197,17 +199,17 @@
     "id": "PAY-0010"
   },
   {
-    "amount": 15000,
+    "amount": 15230,
     "currency": "INR",
     "status": "RJCT",
-    "errorCode": "RJCT_REF_DUP",
-    "errorMessage": "Transaction reference number already present in system",
+    "errorCode": "REF_CONFLICT",
+    "errorMessage": "Transaction reference already exists in ledger; request rejected.",
     "logs": [
-      "2024-03-11T09:12:01.123Z INFO PaymentGateway: Received payment request TXN_REF=UTR20240311998877",
-      "2024-03-11T09:12:01.245Z DEBUG CoreBanking: Checking reference UTR20240311998877 against ledger",
-      "2024-03-11T09:12:01.310Z WARN CoreBanking: Reference UTR20240311998877 already exists with status SUCCESS",
-      "2024-03-11T09:12:01.400Z ERROR PaymentGateway: Rejecting request - matching reference found in ledger",
-      "2024-03-11T09:12:01.455Z INFO PaymentGateway: Response code RJCT_REF_DUP sent to originator"
+      "2024-03-11T09:12:01Z INFO PaymentGateway: Received payment request ref=TXN20240311PAY0091",
+      "2024-03-11T09:12:01Z DEBUG Validator: Checking reference uniqueness in ledger store",
+      "2024-03-11T09:12:02Z WARN Validator: Reference TXN20240311PAY0091 matched existing settled entry dated 2024-03-11T08:55:10Z",
+      "2024-03-11T09:12:02Z ERROR PaymentGateway: Rejecting request - reference already present in system",
+      "2024-03-11T09:12:02Z INFO PaymentGateway: Status set to RJCT, code=REF_CONFLICT"
     ],
     "expected": {
       "rootCause": "DUPLICATE_PAYMENT",
@@ -216,17 +218,17 @@
     "id": "PAY-0011"
   },
   {
-    "amount": 7200.5,
+    "amount": 4200.5,
     "currency": "INR",
     "status": "FAIL",
-    "errorCode": "ERR_IDEMPOTENCY_KEY",
-    "errorMessage": "Idempotency key already used for a prior successful transaction",
+    "errorCode": "IDEMPOTENCY_KEY_CONFLICT",
+    "errorMessage": "Request blocked because idempotency key was already consumed for an earlier transaction.",
     "logs": [
-      "2024-03-12T14:05:10.001Z INFO API_Gateway: Incoming request with Idempotency-Key=IDMP-88231-AX",
-      "2024-03-12T14:05:10.050Z DEBUG API_Gateway: Looking up Idempotency-Key=IDMP-88231-AX in cache store",
-      "2024-03-12T14:05:10.075Z WARN API_Gateway: Cache hit found for IDMP-88231-AX linked to txn_id=TXN99231",
-      "2024-03-12T14:05:10.090Z ERROR API_Gateway: Same key was previously used to complete a transaction successfully",
-      "2024-03-12T14:05:10.120Z INFO API_Gateway: Returning failure response ERR_IDEMPOTENCY_KEY"
+      "2024-03-12T14:02:10Z INFO API: Incoming request idempotency-key=abc-9981-key",
+      "2024-03-12T14:02:10Z DEBUG IdempotencyStore: Lookup for key abc-9981-key",
+      "2024-03-12T14:02:11Z WARN IdempotencyStore: Key abc-9981-key found, linked to transaction TXN778812 completed at 13:58:44Z",
+      "2024-03-12T14:02:11Z ERROR API: Returning failure - key reuse detected",
+      "2024-03-12T14:02:11Z INFO API: Marking current request status=FAIL"
     ],
     "expected": {
       "rootCause": "DUPLICATE_PAYMENT",
@@ -235,18 +237,17 @@
     "id": "PAY-0012"
   },
   {
-    "amount": 25000,
+    "amount": 98000,
     "currency": "INR",
     "status": "PARK",
-    "errorCode": "PARK_MATCH_FOUND",
-    "errorMessage": "Payment parked pending review - matching transaction found for same beneficiary and amount within 60 seconds",
+    "errorCode": "TXN_HASH_MATCH",
+    "errorMessage": "Parked for manual review: transaction hash matches a record already processed today.",
     "logs": [
-      "2024-03-13T18:30:00.500Z INFO PaymentEngine: New payment initiated to beneficiary ACC1234567890 amount=25000.00",
-      "2024-03-13T18:30:00.600Z DEBUG FraudCheck: Scanning last 5 minutes of transactions for beneficiary ACC1234567890",
-      "2024-03-13T18:30:00.650Z WARN FraudCheck: Found prior transaction to ACC1234567890 amount=25000.00 at 18:29:42",
-      "2024-03-13T18:30:00.700Z WARN FraudCheck: Time gap 18 seconds, amount and beneficiary identical",
-      "2024-03-13T18:30:00.750Z INFO PaymentEngine: Parking transaction for manual review due to matching pattern",
-      "2024-03-13T18:30:00.800Z INFO PaymentEngine: Status set to PARK, code=PARK_MATCH_FOUND"
+      "2024-03-13T11:20:00Z INFO Orchestrator: New payment queued, computing txn hash for dedup check",
+      "2024-03-13T11:20:00Z DEBUG DedupService: Hash a83f2e1c9 computed from amount+beneficiary+date",
+      "2024-03-13T11:20:01Z WARN DedupService: Hash a83f2e1c9 already exists in today's processed batch, entry TXN665521",
+      "2024-03-13T11:20:01Z WARN Orchestrator: Holding transaction pending manual verification",
+      "2024-03-13T11:20:01Z INFO Orchestrator: Status changed to PARK, code=TXN_HASH_MATCH"
     ],
     "expected": {
       "rootCause": "DUPLICATE_PAYMENT",
@@ -255,18 +256,18 @@
     "id": "PAY-0013"
   },
   {
-    "amount": 45999.99,
+    "amount": 27650.75,
     "currency": "INR",
     "status": "PDNG",
-    "errorCode": "ERR_GATEWAY_TIMEOUT",
-    "errorMessage": "Gateway timeout while processing payment",
+    "errorCode": "RETRY_SUPPRESSED",
+    "errorMessage": "Retry suppressed after core banking timeout; downstream ledger shows prior successful post for same instruction.",
     "logs": [
-      "2024-03-14T11:00:00.100Z INFO PaymentGateway: Sending payment request to NPCI switch, txn_id=TXN551200",
-      "2024-03-14T11:00:05.200Z WARN PaymentGateway: No response received from NPCI switch after 5000ms",
-      "2024-03-14T11:00:05.250Z INFO RetryHandler: Initiating retry for txn_id=TXN551200 with new internal_id=TXN551201",
-      "2024-03-14T11:00:05.300Z DEBUG RetryHandler: Copying original payload amount=45999.99, account=ACC7788990011",
-      "2024-03-14T11:00:10.400Z ERROR PaymentGateway: Second request TXN551201 also pending, no confirmation received",
-      "2024-03-14T11:00:10.450Z INFO PaymentGateway: Marking status as PDNG, code=ERR_GATEWAY_TIMEOUT"
+      "2024-03-14T18:45:00Z INFO PaymentEngine: Submitting payment instruction ID=INSTR55231 to core banking",
+      "2024-03-14T18:45:30Z WARN CoreBankingClient: No response received within 30s timeout window",
+      "2024-03-14T18:45:31Z INFO RetryManager: Preparing automatic retry for INSTR55231",
+      "2024-03-14T18:45:32Z DEBUG LedgerAudit: Cross-check found INSTR55231 already posted at 18:44:58Z prior to timeout",
+      "2024-03-14T18:45:32Z WARN RetryManager: Suppressing retry to avoid re-execution of already posted instruction",
+      "2024-03-14T18:45:33Z INFO PaymentEngine: Status held at PDNG pending reconciliation"
     ],
     "expected": {
       "rootCause": "DUPLICATE_PAYMENT",
@@ -275,18 +276,18 @@
     "id": "PAY-0014"
   },
   {
-    "amount": 12345,
+    "amount": 132000,
     "currency": "INR",
     "status": "RJCT",
-    "errorCode": "RJCT_VALIDATION_FAIL",
-    "errorMessage": "Validation failed at core banking due to reference mismatch",
+    "errorCode": "BAL_CHECK_FAIL",
+    "errorMessage": "Debit blocked: available balance insufficient after prior identical debit was applied.",
     "logs": [
-      "2024-03-15T08:45:00.010Z INFO PaymentService: Received request payload_hash=9f8a2c1b7e",
-      "2024-03-15T08:45:00.050Z DEBUG PaymentService: Computing checksum for incoming payload",
-      "2024-03-15T08:45:00.090Z DEBUG PaymentService: Checksum 9f8a2c1b7e matches record processed at 08:44:55",
-      "2024-03-15T08:45:00.130Z WARN CoreBanking: Reference field could not be validated against expected schema",
-      "2024-03-15T08:45:00.180Z ERROR CoreBanking: Validation module returned failure, rejecting transaction",
-      "2024-03-15T08:45:00.220Z INFO PaymentService: Status RJCT, code=RJCT_VALIDATION_FAIL logged for audit"
+      "2024-03-15T10:05:00Z INFO AccountService: Balance check initiated for account 0099887766, amount=132000.00",
+      "2024-03-15T10:05:00Z DEBUG LedgerService: Fetching last 5 transactions for account 0099887766",
+      "2024-03-15T10:05:01Z WARN LedgerService: Found transaction TXN990011 with identical amount and beneficiary posted 4 minutes ago",
+      "2024-03-15T10:05:01Z INFO AccountService: Available balance now below requested amount due to earlier matching debit",
+      "2024-03-15T10:05:02Z ERROR AccountService: Declining request, insufficient funds after considering recent identical posting",
+      "2024-03-15T10:05:02Z INFO AccountService: Status set to RJCT, code=BAL_CHECK_FAIL"
     ],
     "expected": {
       "rootCause": "DUPLICATE_PAYMENT",
@@ -295,17 +296,18 @@
     "id": "PAY-0015"
   },
   {
-    "amount": 15230.5,
+    "amount": 15250,
     "currency": "INR",
     "status": "RJCT",
-    "errorCode": "RC57",
-    "errorMessage": "Transaction rejected by beneficiary bank during account validation",
+    "errorCode": "E4021",
+    "errorMessage": "Beneficiary account does not exist in destination bank records",
     "logs": [
-      "2024-03-11T09:12:04Z INFO PaymentGateway: Initiating NEFT transfer, ref=NEFT2024031100987",
-      "2024-03-11T09:12:06Z DEBUG CoreSwitch: Sending validation request to beneficiary bank IFSC=HDFC0001234",
-      "2024-03-11T09:12:09Z WARN CoreSwitch: Beneficiary bank returned response code 57 - account number and holder name do not match",
-      "2024-03-11T09:12:09Z ERROR PaymentGateway: Rejecting transaction, unable to confirm receiving account details",
-      "2024-03-11T09:12:10Z INFO NotificationService: Sending failure notice to originator"
+      "2024-01-15T09:22:11.302Z INFO PaymentGateway: Transaction TXN789456123 initiated for amount 15250.00 INR",
+      "2024-01-15T09:22:11.845Z INFO ValidationService: Remitter details verified successfully",
+      "2024-01-15T09:22:12.103Z ERROR BeneficiaryLookup: Account number 004501238976 not found in NPCI registry",
+      "2024-01-15T09:22:12.104Z ERROR BeneficiaryLookup: Destination bank returned NO_RECORD for account lookup",
+      "2024-01-15T09:22:12.201Z ERROR PaymentGateway: Transaction rejected - beneficiary verification failed",
+      "2024-01-15T09:22:12.250Z INFO PaymentGateway: Status updated to RJCT, notifying originator"
     ],
     "expected": {
       "rootCause": "INVALID_BENEFICIARY",
@@ -314,17 +316,18 @@
     "id": "PAY-0016"
   },
   {
-    "amount": 8700,
+    "amount": 8900.5,
     "currency": "INR",
     "status": "FAIL",
-    "errorCode": "E205",
-    "errorMessage": "Payee bank declined the credit request during processing",
+    "errorCode": "E4033",
+    "errorMessage": "Account status inactive - unable to credit funds",
     "logs": [
-      "2024-04-02T14:20:11Z INFO IMPSService: Transaction request created, txnId=IMPS88213311",
-      "2024-04-02T14:20:13Z DEBUG RoutingEngine: Forwarding to destination bank code 0456",
-      "2024-04-02T14:20:15Z WARN DestinationBank: Response - target account status inactive, credit not possible",
-      "2024-04-02T14:20:15Z ERROR IMPSService: Transaction marked FAIL, reason code E205",
-      "2024-04-02T14:20:16Z INFO AuditLog: Failure reason logged for reconciliation team"
+      "2024-01-16T14:05:33.001Z INFO TransferService: Processing outward remittance TXN556677889",
+      "2024-01-16T14:05:33.412Z INFO CoreBankingAdapter: Debit posted successfully to remitter account",
+      "2024-01-16T14:05:33.890Z ERROR CoreBankingAdapter: Credit account 887766554433 flagged as DORMANT since 2022-08-01",
+      "2024-01-16T14:05:33.891Z ERROR CoreBankingAdapter: Cannot post credit - account frozen/inactive status",
+      "2024-01-16T14:05:34.020Z ERROR TransferService: Reversal initiated for remitter debit due to credit failure",
+      "2024-01-16T14:05:34.500Z INFO TransferService: Transaction marked as FAIL, reversal TXN889900112 created"
     ],
     "expected": {
       "rootCause": "INVALID_BENEFICIARY",
@@ -333,18 +336,18 @@
     "id": "PAY-0017"
   },
   {
-    "amount": 52000,
+    "amount": 22000,
     "currency": "INR",
     "status": "RJCT",
-    "errorCode": "R03",
-    "errorMessage": "No matching account record found at receiving institution",
+    "errorCode": "E4045",
+    "errorMessage": "Name mismatch between provided beneficiary name and bank records",
     "logs": [
-      "2024-05-19T11:05:00Z INFO RTGSProcessor: Payment initiated, amount=52000.00 INR",
-      "2024-05-19T11:05:02Z DEBUG CoreBanking: Querying account master for provided account number",
-      "2024-05-19T11:05:03Z ERROR CoreBanking: Lookup failed - no account record exists for given number/IFSC combination",
-      "2024-05-19T11:05:04Z ERROR RTGSProcessor: Transaction rejected, cannot locate destination account",
-      "2024-05-19T11:05:05Z INFO AlertService: Ops team notified of rejection R03",
-      "2024-05-19T11:05:06Z INFO AuditLog: Record archived with status RJCT"
+      "2024-01-17T11:40:02.500Z INFO PaymentInitiation: New IMPS request received TXN334455667",
+      "2024-01-17T11:40:02.750Z INFO NameMatchService: Comparing input name 'RAJESH KUMAR' against bank records",
+      "2024-01-17T11:40:03.100Z WARN NameMatchService: Bank records show account holder as 'RAJESH SHARMA' - mismatch detected",
+      "2024-01-17T11:40:03.101Z ERROR NameMatchService: Match confidence score 12% - below threshold of 80%",
+      "2024-01-17T11:40:03.200Z ERROR PaymentInitiation: Transaction rejected due to identity verification failure",
+      "2024-01-17T11:40:03.250Z INFO PaymentInitiation: Status set to RJCT, code E4045 assigned"
     ],
     "expected": {
       "rootCause": "INVALID_BENEFICIARY",
@@ -353,18 +356,18 @@
     "id": "PAY-0018"
   },
   {
-    "amount": 120000,
+    "amount": 45000,
     "currency": "INR",
     "status": "PARK",
-    "errorCode": "E999",
-    "errorMessage": "Transaction parked pending manual verification",
+    "errorCode": "E4102",
+    "errorMessage": "Transaction parked pending manual review of destination account",
     "logs": [
-      "2024-06-07T08:45:22Z INFO PaymentQueue: High value transaction queued for compliance check",
-      "2024-06-07T08:45:25Z DEBUG NetworkMonitor: Latency observed to partner bank gateway - 480ms",
-      "2024-06-07T08:45:30Z WARN VerificationService: Account holder lookup service returned empty dataset for supplied credentials",
-      "2024-06-07T08:45:32Z INFO RetryHandler: Scheduling retry attempt in 300s due to inconclusive response",
-      "2024-06-07T08:46:35Z WARN ComplianceEngine: Manual review required, unable to auto-confirm counterpart details",
-      "2024-06-07T08:46:36Z INFO PaymentQueue: Status set to PARK pending analyst action"
+      "2024-01-18T16:15:20.100Z INFO NEFTProcessor: Batch transaction TXN112233445 picked for processing",
+      "2024-01-18T16:15:20.550Z INFO NEFTProcessor: Connecting to core banking system for validation",
+      "2024-01-18T16:15:21.800Z INFO CoreBankingAdapter: Response received in 1250ms, within SLA limits",
+      "2024-01-18T16:15:22.001Z WARN AccountValidator: IFSC code valid but account number 445566778899 shows CLOSED status",
+      "2024-01-18T16:15:22.100Z INFO NEFTProcessor: Auto-processing halted, routing to manual queue",
+      "2024-01-18T16:15:22.200Z INFO NEFTProcessor: Transaction parked with code E4102 for operations team review"
     ],
     "expected": {
       "rootCause": "INVALID_BENEFICIARY",
@@ -373,18 +376,18 @@
     "id": "PAY-0019"
   },
   {
-    "amount": 3400.75,
+    "amount": 67500,
     "currency": "INR",
     "status": "PDNG",
-    "errorCode": "P102",
-    "errorMessage": "Awaiting confirmation from remitter bank system",
+    "errorCode": "E4088",
+    "errorMessage": "Credit posting deferred - destination account requires verification",
     "logs": [
-      "2024-07-14T16:02:10Z INFO UPIProcessor: Payment request forwarded, ref=UPI774920051",
-      "2024-07-14T16:02:12Z DEBUG NetworkGateway: Timeout waiting for acknowledgment from acquirer, retry scheduled",
-      "2024-07-14T16:02:45Z DEBUG NetworkGateway: Retry attempt 1 sent, awaiting response",
-      "2024-07-14T16:03:10Z WARN NameMatchService: Fuzzy match score below threshold for account holder name comparison",
-      "2024-07-14T16:03:12Z INFO UPIProcessor: Transaction held in pending state, no final confirmation received",
-      "2024-07-14T16:03:15Z INFO Scheduler: Next status check scheduled in 15 minutes"
+      "2024-01-19T10:30:15.000Z INFO RTGSGateway: High-value transaction TXN998877665 submitted",
+      "2024-01-19T10:30:15.300Z INFO RTGSGateway: RBI reference number generated successfully",
+      "2024-01-19T10:30:16.750Z INFO CoreBankingAdapter: Core system responded within 1750ms",
+      "2024-01-19T10:30:17.001Z INFO CoreBankingAdapter: Remitter debit confirmed, proceeding to credit leg",
+      "2024-01-19T10:30:17.450Z WARN CreditProcessor: Target account 998877665544 exists but linked customer ID does not match beneficiary name provided",
+      "2024-01-19T10:30:17.600Z INFO CreditProcessor: Credit leg suspended pending manual confirmation, status set to PDNG"
     ],
     "expected": {
       "rootCause": "INVALID_BENEFICIARY",
@@ -393,17 +396,17 @@
     "id": "PAY-0020"
   },
   {
-    "amount": 15230,
+    "amount": 15000,
     "currency": "INR",
     "status": "RJCT",
-    "errorCode": "RJCT_ROUTE_NOTFOUND",
-    "errorMessage": "Beneficiary routing entry could not be resolved for IFSC prefix HDFC0",
+    "errorCode": "RJCT_MAP_001",
+    "errorMessage": "Routing lookup failed: destination bank code not found in active mapping table",
     "logs": [
-      "2024-03-11T09:12:01.334Z INFO PaymentEngine: Received transfer request TXN784512",
-      "2024-03-11T09:12:01.410Z DEBUG RouteResolver: Looking up routing table for prefix HDFC0",
-      "2024-03-11T09:12:01.412Z ERROR RouteResolver: No entry found in routing_map.json for prefix HDFC0",
-      "2024-03-11T09:12:01.415Z ERROR PaymentEngine: Unable to determine destination gateway, aborting transaction",
-      "2024-03-11T09:12:01.420Z INFO PaymentEngine: Status set to RJCT, reason=ROUTE_NOTFOUND"
+      "2024-03-11T09:12:01.114Z INFO PaymentService: Received NEFT request ref=NEFT20240311091201",
+      "2024-03-11T09:12:01.220Z DEBUG RoutingEngine: Resolving IFSC HDFC0001234 to internal bank id",
+      "2024-03-11T09:12:01.225Z ERROR RoutingEngine: No entry found in bank_code_mapping table for prefix HDFC0",
+      "2024-03-11T09:12:01.230Z ERROR PaymentService: Unable to determine settlement route, aborting transaction",
+      "2024-03-11T09:12:01.235Z INFO PaymentService: Transaction ref=NEFT20240311091201 marked RJCT"
     ],
     "expected": {
       "rootCause": "CONFIG_ERROR",
@@ -412,17 +415,18 @@
     "id": "PAY-0021"
   },
   {
-    "amount": 8999.5,
+    "amount": 87250.5,
     "currency": "INR",
     "status": "FAIL",
     "errorCode": "FAIL_PARAM_MISSING",
-    "errorMessage": "Required property 'merchant.callback.url' is null",
+    "errorMessage": "Required gateway parameter 'settlementAccountId' was not set for merchant profile",
     "logs": [
-      "2024-03-12T14:02:45.101Z INFO MerchantService: Initializing callback dispatch for order ORD99213",
-      "2024-03-12T14:02:45.120Z WARN SettingsLoader: Property 'merchant.callback.url' not present in merchant profile",
-      "2024-03-12T14:02:45.125Z ERROR CallbackDispatcher: Cannot construct HTTP request, target URL is null",
-      "2024-03-12T14:02:45.130Z ERROR PaymentEngine: Payment marked FAIL due to missing callback destination",
-      "2024-03-12T14:02:45.132Z INFO PaymentEngine: Transaction TXN99213 closed with status FAIL"
+      "2024-04-02T14:05:44.001Z INFO GatewayAdapter: Initiating UPI collect for merchant=MER5521",
+      "2024-04-02T14:05:44.050Z DEBUG GatewayAdapter: Loading merchant profile settings from settings_store",
+      "2024-04-02T14:05:44.055Z WARN GatewayAdapter: Field settlementAccountId is null in merchant profile MER5521",
+      "2024-04-02T14:05:44.060Z ERROR GatewayAdapter: Cannot construct settlement instruction without account id",
+      "2024-04-02T14:05:44.065Z ERROR PaymentService: Transaction failed due to incomplete merchant setup",
+      "2024-04-02T14:05:44.070Z INFO PaymentService: Marking transaction status=FAIL"
     ],
     "expected": {
       "rootCause": "CONFIG_ERROR",
@@ -431,18 +435,18 @@
     "id": "PAY-0022"
   },
   {
-    "amount": 22000,
+    "amount": 5400,
     "currency": "INR",
     "status": "PARK",
-    "errorCode": "PARK_MAPPING_ERR",
-    "errorMessage": "Currency code mapping absent in gateway.yaml for INR settlement account",
+    "errorCode": "PARK_ENV_MISMATCH",
+    "errorMessage": "Callback URL points to decommissioned staging endpoint",
     "logs": [
-      "2024-03-13T11:45:10.200Z INFO SettlementModule: Preparing settlement batch for TXN33456",
-      "2024-03-13T11:45:10.210Z DEBUG YamlConfigReader: Reading gateway.yaml section 'currency_accounts'",
-      "2024-03-13T11:45:10.215Z ERROR YamlConfigReader: Key 'INR' not found under currency_accounts node",
-      "2024-03-13T11:45:10.220Z WARN SettlementModule: Falling back to manual review queue",
-      "2024-03-13T11:45:10.225Z INFO PaymentEngine: Transaction TXN33456 parked pending manual mapping fix",
-      "2024-03-13T11:45:10.230Z INFO PaymentEngine: Status=PARK, code=PARK_MAPPING_ERR"
+      "2024-05-19T21:30:10.500Z INFO PaymentOrchestrator: Payment ref=IMPS998877 queued for processing",
+      "2024-05-19T21:30:10.610Z DEBUG NotificationService: Fetching webhook URL from deployment properties",
+      "2024-05-19T21:30:10.615Z WARN NotificationService: webhook.callback.url still set to https://staging-old.internal/api/notify",
+      "2024-05-19T21:30:10.700Z ERROR NotificationService: Connection refused - host staging-old.internal no longer resolvable",
+      "2024-05-19T21:30:10.710Z ERROR PaymentOrchestrator: Cannot confirm downstream ack, parking transaction",
+      "2024-05-19T21:30:10.720Z INFO PaymentOrchestrator: Status set to PARK pending manual review"
     ],
     "expected": {
       "rootCause": "CONFIG_ERROR",
@@ -451,18 +455,18 @@
     "id": "PAY-0023"
   },
   {
-    "amount": 46125.75,
+    "amount": 132000,
     "currency": "INR",
     "status": "PDNG",
-    "errorCode": "PDNG_TIMEOUT",
-    "errorMessage": "Downstream acknowledgement not received within expected window",
+    "errorCode": "PDNG_LIMIT_002",
+    "errorMessage": "Transaction exceeds configured per-channel limit for RTGS product",
     "logs": [
-      "2024-03-14T18:20:03.000Z INFO PaymentEngine: Dispatching TXN51290 to core banking adapter",
-      "2024-03-14T18:20:03.050Z DEBUG AdapterClient: Using connection timeout value 200ms from environment profile",
-      "2024-03-14T18:20:03.260Z WARN AdapterClient: No response received before timeout expired",
-      "2024-03-14T18:20:03.265Z ERROR PaymentEngine: Marking transaction as PDNG, retry scheduled",
-      "2024-03-14T18:20:04.500Z INFO RetryWorker: Retry attempt 1 for TXN51290 still pending, same timeout applied",
-      "2024-03-14T18:20:05.800Z INFO RetryWorker: Retry attempt 2 for TXN51290 also expired at 200ms"
+      "2024-06-07T11:02:15.300Z INFO RTGSProcessor: Processing high-value transfer ref=RTGS4471102",
+      "2024-06-07T11:02:15.310Z DEBUG LimitService: Checking channel_limit table for product=RTGS_STANDARD",
+      "2024-06-07T11:02:15.315Z DEBUG LimitService: Retrieved max_limit=100000 for product RTGS_STANDARD, region=IN-SOUTH",
+      "2024-06-07T11:02:15.320Z WARN LimitService: Transaction amount 132000 exceeds retrieved limit, but RTGS is normally unlimited",
+      "2024-06-07T11:02:15.330Z ERROR RTGSProcessor: Core banking accepted debit, response code 00 received within 400ms",
+      "2024-06-07T11:02:15.340Z ERROR RTGSProcessor: Downstream limit gate blocked release, holding transaction as PDNG"
     ],
     "expected": {
       "rootCause": "CONFIG_ERROR",
@@ -471,18 +475,18 @@
     "id": "PAY-0024"
   },
   {
-    "amount": 12750,
+    "amount": 9600.75,
     "currency": "INR",
-    "status": "FAIL",
-    "errorCode": "FAIL_VALIDATION",
-    "errorMessage": "Transaction rejected by validator: unsupported merchant category code",
+    "status": "RJCT",
+    "errorCode": "RJCT_ROUTE_UNREACHABLE",
+    "errorMessage": "Destination network node unreachable for beneficiary bank segment",
     "logs": [
-      "2024-03-15T07:33:12.001Z INFO PaymentEngine: Validating TXN60021 against merchant risk rules",
-      "2024-03-15T07:33:12.030Z DEBUG RiskValidator: Loaded MCC whitelist version 3.2 from cache",
-      "2024-03-15T07:33:12.045Z INFO RiskValidator: Merchant MCC 6012 flagged as not present in whitelist v3.2",
-      "2024-03-15T07:33:12.050Z WARN CacheManager: Whitelist cache last refreshed 47 days ago",
-      "2024-03-15T07:33:12.060Z ERROR PaymentEngine: Transaction failed validation, MCC not permitted",
-      "2024-03-15T07:33:12.065Z INFO PaymentEngine: TXN60021 closed with status FAIL"
+      "2024-07-22T08:45:00.001Z INFO SwitchService: Forwarding transaction ref=UPI3390221 to acquirer switch",
+      "2024-07-22T08:45:00.150Z DEBUG SwitchService: Selecting route based on bank_segment_routing_table entry=SEG_09",
+      "2024-07-22T08:45:00.155Z WARN SwitchService: SEG_09 entry points to retired gateway node gw-legacy-03",
+      "2024-07-22T08:45:00.400Z ERROR SwitchService: Connection attempt to gw-legacy-03 timed out after 250ms",
+      "2024-07-22T08:45:00.410Z INFO SwitchService: Retrying via SEG_09 fallback, same retired node returned",
+      "2024-07-22T08:45:00.420Z ERROR SwitchService: All routing attempts exhausted using outdated segment table, marking RJCT"
     ],
     "expected": {
       "rootCause": "CONFIG_ERROR",
@@ -491,16 +495,18 @@
     "id": "PAY-0025"
   },
   {
-    "amount": 15420.5,
+    "amount": 15230.5,
     "currency": "INR",
-    "status": "RJCT",
-    "errorCode": "ERR_CONN_TIMEOUT",
-    "errorMessage": "Payment gateway did not respond within expected time window",
+    "status": "FAIL",
+    "errorCode": "ERR_CONN_REFUSED",
+    "errorMessage": "Payment gateway connection refused by upstream host",
     "logs": [
-      "2024-03-11T10:12:01.123Z INFO  TxnID=TXN9081 Initiating payment request to acquirer endpoint",
-      "2024-03-11T10:12:04.456Z WARN  TxnID=TXN9081 Socket connection to 10.22.4.51:443 not established",
-      "2024-03-11T10:12:31.900Z ERROR TxnID=TXN9081 Retrying connection attempt 1 of 3",
-      "2024-03-11T10:13:02.001Z ERROR TxnID=TXN9081 All retry attempts exhausted, marking transaction as rejected"
+      "2024-03-11T09:12:01.102Z INFO PaymentInitiated txnId=TXN9981 amount=15230.50",
+      "2024-03-11T09:12:01.450Z DEBUG Attempting to open socket to gateway-01.bank.internal:443",
+      "2024-03-11T09:12:01.900Z ERROR Connection refused: gateway-01.bank.internal:443",
+      "2024-03-11T09:12:02.010Z ERROR Retry attempt 1 failed - connection refused",
+      "2024-03-11T09:12:03.200Z ERROR Retry attempt 2 failed - connection refused",
+      "2024-03-11T09:12:03.500Z FATAL Payment marked FAIL after 2 retries"
     ],
     "expected": {
       "rootCause": "NETWORK_ERROR",
@@ -509,16 +515,17 @@
     "id": "PAY-0026"
   },
   {
-    "amount": 8200,
+    "amount": 8700,
     "currency": "INR",
-    "status": "FAIL",
-    "errorCode": "ERR_HOST_UNREACHABLE",
-    "errorMessage": "Unable to reach downstream processing host",
+    "status": "RJCT",
+    "errorCode": "DNS_RESOLUTION_FAILED",
+    "errorMessage": "Unable to resolve hostname for beneficiary bank switch",
     "logs": [
-      "2024-03-11T11:05:10.221Z INFO  TxnID=TXN7712 Sending debit instruction to core banking host",
-      "2024-03-11T11:05:12.340Z ERROR TxnID=TXN7712 DNS resolution failed for host core-bank-prod.internal",
-      "2024-03-11T11:05:12.500Z ERROR TxnID=TXN7712 Connection refused, host may be unreachable",
-      "2024-03-11T11:05:13.010Z ERROR TxnID=TXN7712 Transaction marked FAIL due to unreachable endpoint"
+      "2024-03-12T14:05:44.001Z INFO PaymentRequest received txnId=TXN4521",
+      "2024-03-12T14:05:44.200Z DEBUG Resolving hostname switch.beneficiarybank.co.in",
+      "2024-03-12T14:05:45.700Z ERROR getaddrinfo ENOTFOUND switch.beneficiarybank.co.in",
+      "2024-03-12T14:05:45.900Z ERROR Unable to establish outbound session to remote switch",
+      "2024-03-12T14:05:46.100Z INFO Transaction status set to RJCT"
     ],
     "expected": {
       "rootCause": "NETWORK_ERROR",
@@ -527,17 +534,17 @@
     "id": "PAY-0027"
   },
   {
-    "amount": 305000.75,
+    "amount": 22150.75,
     "currency": "INR",
     "status": "PDNG",
-    "errorCode": "ERR_SOCKET_RESET",
-    "errorMessage": "Connection to payment switch was interrupted mid-transaction",
+    "errorCode": "GW_502",
+    "errorMessage": "Bad gateway response received from intermediary node",
     "logs": [
-      "2024-03-11T09:44:00.001Z INFO  TxnID=TXN5540 Payment request forwarded to switch node SW-03",
-      "2024-03-11T09:44:00.512Z WARN  TxnID=TXN5540 TCP handshake incomplete with SW-03",
-      "2024-03-11T09:44:02.223Z ERROR TxnID=TXN5540 Connection reset by peer mid-transmission",
-      "2024-03-11T09:44:02.400Z ERROR TxnID=TXN5540 Response not received, transaction status set to pending",
-      "2024-03-11T09:44:05.900Z ERROR TxnID=TXN5540 Manual reconciliation required due to incomplete handshake"
+      "2024-03-13T18:30:10.000Z INFO Routing payment TXN7788 through intermediary node IN-NODE-03",
+      "2024-03-13T18:30:10.500Z DEBUG Sending POST /v2/transfer to intermediary node",
+      "2024-03-13T18:30:11.800Z ERROR HTTP 502 Bad Gateway received from IN-NODE-03",
+      "2024-03-13T18:30:12.000Z ERROR Upstream server not reachable, marking as pending",
+      "2024-03-13T18:30:12.300Z WARN Manual intervention required, transaction left PDNG"
     ],
     "expected": {
       "rootCause": "NETWORK_ERROR",
@@ -546,18 +553,18 @@
     "id": "PAY-0028"
   },
   {
-    "amount": 12999.99,
+    "amount": 5400.25,
     "currency": "INR",
-    "status": "PARK",
-    "errorCode": "ERR_UPSTREAM_502",
-    "errorMessage": "Upstream service returned an unexpected gateway response",
+    "status": "FAIL",
+    "errorCode": "ERR_SOCKET_RESET",
+    "errorMessage": "Core banking processing incomplete, transaction could not be confirmed",
     "logs": [
-      "2024-03-11T14:22:11.000Z INFO  TxnID=TXN3390 Validating account balance before debit",
-      "2024-03-11T14:22:11.450Z INFO  TxnID=TXN3390 Balance check successful, proceeding to settlement",
-      "2024-03-11T14:22:13.980Z WARN  TxnID=TXN3390 Settlement service responded with 502 Bad Gateway",
-      "2024-03-11T14:22:14.100Z WARN  TxnID=TXN3390 Response payload empty, possible upstream disruption",
-      "2024-03-11T14:22:16.700Z ERROR TxnID=TXN3390 Parking transaction pending manual review",
-      "2024-03-11T14:22:16.800Z INFO  TxnID=TXN3390 Note: account balance was sufficient at time of check"
+      "2024-03-14T11:00:00.100Z INFO PaymentInitiated txnId=TXN3390 amount=5400.25",
+      "2024-03-14T11:00:00.400Z DEBUG Forwarding request to core banking adapter",
+      "2024-03-14T11:00:00.900Z DEBUG Adapter opened TCP session to cbs-adapter.internal:8443",
+      "2024-03-14T11:00:03.200Z ERROR Socket reset by peer while awaiting core banking acknowledgement",
+      "2024-03-14T11:00:03.400Z WARN No response received, transaction could not be confirmed",
+      "2024-03-14T11:00:03.600Z ERROR Marking transaction FAIL, treating as incomplete core cycle"
     ],
     "expected": {
       "rootCause": "NETWORK_ERROR",
@@ -566,18 +573,18 @@
     "id": "PAY-0029"
   },
   {
-    "amount": 47650.2,
+    "amount": 39900,
     "currency": "INR",
-    "status": "RJCT",
-    "errorCode": "ERR_TXN_INCOMPLETE",
-    "errorMessage": "Transaction could not be completed due to processing interruption",
+    "status": "PARK",
+    "errorCode": "ROUTE_UNREACHABLE",
+    "errorMessage": "Beneficiary bank validation could not be completed",
     "logs": [
-      "2024-03-11T16:08:30.000Z INFO  TxnID=TXN2201 Beneficiary account verified successfully",
-      "2024-03-11T16:08:30.220Z INFO  TxnID=TXN2201 Fraud check passed with score 12/100",
-      "2024-03-11T16:08:31.900Z WARN  TxnID=TXN2201 Latency spike observed on inter-service call to ledger module",
-      "2024-03-11T16:08:35.400Z ERROR TxnID=TXN2201 No acknowledgment received from ledger module after dispatch",
-      "2024-03-11T16:08:36.010Z ERROR TxnID=TXN2201 Transaction rejected, treating as incomplete due to missing confirmation",
-      "2024-03-11T16:08:36.300Z INFO  TxnID=TXN2201 Ledger module last heartbeat logged 47 seconds prior to dispatch"
+      "2024-03-15T20:15:00.000Z INFO PaymentRequest TXN5567 for beneficiary acct ****4432",
+      "2024-03-15T20:15:00.300Z DEBUG Validating beneficiary account with issuer bank service",
+      "2024-03-15T20:15:00.700Z DEBUG Checking cached beneficiary details - found valid mapping",
+      "2024-03-15T20:15:01.900Z ERROR Host unreachable: issuer-validation.bankgrid.in",
+      "2024-03-15T20:15:02.100Z WARN Falling back to cached data insufficient for final confirmation",
+      "2024-03-15T20:15:02.400Z INFO Transaction parked pending validation retry"
     ],
     "expected": {
       "rootCause": "NETWORK_ERROR",
