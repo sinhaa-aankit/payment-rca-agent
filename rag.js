@@ -21,13 +21,14 @@ function cosine(a, b) {
     return total;
 }
 
-export async function search(query, k = 3) {
+export async function search(query, k = 3, source) {
   const q = await embed(query);
+  const pool = source ? index.filter((c) => c.source === source) : index;
 
   // TODO 2: score every chunk
   // Hint: index.map(({ embedding, ...chunk }) => ({ ...chunk, score: cosine(q, embedding) }))
   //       (we drop `embedding` from results to keep output small)
-  const scored = index.map(({ embedding, ...chunk }) => ({ ...chunk, score: cosine(q, embedding) }));
+  const scored = pool.map(({ embedding, ...chunk }) => ({ ...chunk, score: cosine(q, embedding) }));
 
   // TODO 3: sort by score (highest first) and return the top k
   scored.sort((a,b) => b.score - a.score);
