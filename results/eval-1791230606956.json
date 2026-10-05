@@ -1,0 +1,242 @@
+[
+  {
+    "id": "PAY-0001",
+    "level": "easy",
+    "expected": "CBS_TIMEOUT",
+    "got": "CBS_TIMEOUT",
+    "ok": true,
+    "ms": 1960
+  },
+  {
+    "id": "PAY-0002",
+    "level": "easy",
+    "expected": "CBS_TIMEOUT",
+    "got": "CBS_TIMEOUT",
+    "ok": true,
+    "ms": 1330
+  },
+  {
+    "id": "PAY-0003",
+    "level": "easy",
+    "expected": "CBS_TIMEOUT",
+    "got": "CBS_TIMEOUT",
+    "ok": true,
+    "ms": 2579
+  },
+  {
+    "id": "PAY-0004",
+    "level": "hard",
+    "expected": "CBS_TIMEOUT",
+    "got": "CBS_TIMEOUT",
+    "ok": true,
+    "ms": 1614
+  },
+  {
+    "id": "PAY-0005",
+    "level": "hard",
+    "expected": "CBS_TIMEOUT",
+    "got": "CBS_TIMEOUT",
+    "ok": true,
+    "ms": 1285
+  },
+  {
+    "id": "PAY-0006",
+    "level": "easy",
+    "expected": "INSUFFICIENT_BALANCE",
+    "got": "INSUFFICIENT_BALANCE",
+    "ok": true,
+    "ms": 3940
+  },
+  {
+    "id": "PAY-0007",
+    "level": "easy",
+    "expected": "INSUFFICIENT_BALANCE",
+    "got": "INSUFFICIENT_BALANCE",
+    "ok": true,
+    "ms": 1304
+  },
+  {
+    "id": "PAY-0008",
+    "level": "easy",
+    "expected": "INSUFFICIENT_BALANCE",
+    "got": "INSUFFICIENT_BALANCE",
+    "ok": true,
+    "ms": 1408
+  },
+  {
+    "id": "PAY-0009",
+    "level": "hard",
+    "expected": "INSUFFICIENT_BALANCE",
+    "got": "INSUFFICIENT_BALANCE",
+    "ok": true,
+    "ms": 1396
+  },
+  {
+    "id": "PAY-0010",
+    "level": "hard",
+    "expected": "INSUFFICIENT_BALANCE",
+    "got": "INSUFFICIENT_BALANCE",
+    "ok": true,
+    "ms": 11327
+  },
+  {
+    "id": "PAY-0011",
+    "level": "easy",
+    "expected": "DUPLICATE_PAYMENT",
+    "got": "DUPLICATE_PAYMENT",
+    "ok": true,
+    "ms": 1399
+  },
+  {
+    "id": "PAY-0012",
+    "level": "easy",
+    "expected": "DUPLICATE_PAYMENT",
+    "got": "DUPLICATE_PAYMENT",
+    "ok": true,
+    "ms": 1310
+  },
+  {
+    "id": "PAY-0013",
+    "level": "easy",
+    "expected": "DUPLICATE_PAYMENT",
+    "got": "DUPLICATE_PAYMENT",
+    "ok": true,
+    "ms": 1316
+  },
+  {
+    "id": "PAY-0014",
+    "level": "hard",
+    "expected": "DUPLICATE_PAYMENT",
+    "got": "CBS_TIMEOUT",
+    "ok": false,
+    "ms": 1437
+  },
+  {
+    "id": "PAY-0015",
+    "level": "hard",
+    "expected": "DUPLICATE_PAYMENT",
+    "got": "DUPLICATE_PAYMENT",
+    "ok": true,
+    "ms": 1239
+  },
+  {
+    "id": "PAY-0016",
+    "level": "easy",
+    "expected": "INVALID_BENEFICIARY",
+    "got": "INVALID_BENEFICIARY",
+    "ok": true,
+    "ms": 1590
+  },
+  {
+    "id": "PAY-0017",
+    "level": "easy",
+    "expected": "INVALID_BENEFICIARY",
+    "got": "INVALID_BENEFICIARY",
+    "ok": true,
+    "ms": 1310
+  },
+  {
+    "id": "PAY-0018",
+    "level": "easy",
+    "expected": "INVALID_BENEFICIARY",
+    "got": "INVALID_BENEFICIARY",
+    "ok": true,
+    "ms": 1361
+  },
+  {
+    "id": "PAY-0019",
+    "level": "hard",
+    "expected": "INVALID_BENEFICIARY",
+    "got": "INVALID_BENEFICIARY",
+    "ok": true,
+    "ms": 1223
+  },
+  {
+    "id": "PAY-0020",
+    "level": "hard",
+    "expected": "INVALID_BENEFICIARY",
+    "got": "INVALID_BENEFICIARY",
+    "ok": true,
+    "ms": 1829
+  },
+  {
+    "id": "PAY-0021",
+    "level": "easy",
+    "expected": "CONFIG_ERROR",
+    "got": "CONFIG_ERROR",
+    "ok": true,
+    "ms": 1502
+  },
+  {
+    "id": "PAY-0022",
+    "level": "easy",
+    "expected": "CONFIG_ERROR",
+    "got": "CONFIG_ERROR",
+    "ok": true,
+    "ms": 1330
+  },
+  {
+    "id": "PAY-0023",
+    "level": "easy",
+    "expected": "CONFIG_ERROR",
+    "got": "CONFIG_ERROR",
+    "ok": true,
+    "ms": 4318
+  },
+  {
+    "id": "PAY-0024",
+    "level": "hard",
+    "expected": "CONFIG_ERROR",
+    "got": "CONFIG_ERROR",
+    "ok": true,
+    "ms": 1572
+  },
+  {
+    "id": "PAY-0025",
+    "level": "hard",
+    "expected": "CONFIG_ERROR",
+    "got": "CONFIG_ERROR",
+    "ok": true,
+    "ms": 3148
+  },
+  {
+    "id": "PAY-0026",
+    "level": "easy",
+    "expected": "NETWORK_ERROR",
+    "got": "NETWORK_ERROR",
+    "ok": true,
+    "ms": 1241
+  },
+  {
+    "id": "PAY-0027",
+    "level": "easy",
+    "expected": "NETWORK_ERROR",
+    "got": "NETWORK_ERROR",
+    "ok": true,
+    "ms": 1220
+  },
+  {
+    "id": "PAY-0028",
+    "level": "easy",
+    "expected": "NETWORK_ERROR",
+    "got": "NETWORK_ERROR",
+    "ok": true,
+    "ms": 1085
+  },
+  {
+    "id": "PAY-0029",
+    "level": "hard",
+    "expected": "NETWORK_ERROR",
+    "got": "NETWORK_ERROR",
+    "ok": true,
+    "ms": 1433
+  },
+  {
+    "id": "PAY-0030",
+    "level": "hard",
+    "expected": "NETWORK_ERROR",
+    "got": "NETWORK_ERROR",
+    "ok": true,
+    "ms": 1332
+  }
+]
