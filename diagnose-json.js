@@ -24,7 +24,7 @@ for (const p of sample) {
   console.log(
     `${p.id}: expected=${expected.rootCause} predicted=${result.rootCause} (${result.confidence}) ${match ? "✅" : "❌"}`
   );
-  console.log(`   evidence: ${result.evidence}`);
+    console.log(`   evidence: ${result.evidence.join(" | ")}`);
 }
 
 console.log(`Score: ${correct}/${sample.length}`);

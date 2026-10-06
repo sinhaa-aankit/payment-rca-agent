@@ -1,0 +1,74 @@
+[
+  {
+    "id": "PAY-0031",
+    "level": "adversarial",
+    "expected": "CBS_TIMEOUT",
+    "got": "CBS_TIMEOUT",
+    "ok": true,
+    "ms": 1942
+  },
+  {
+    "id": "PAY-0032",
+    "level": "adversarial",
+    "expected": "INSUFFICIENT_BALANCE",
+    "got": "INSUFFICIENT_BALANCE",
+    "ok": true,
+    "ms": 1816
+  },
+  {
+    "id": "PAY-0033",
+    "level": "adversarial",
+    "expected": "DUPLICATE_PAYMENT",
+    "got": "DUPLICATE_PAYMENT",
+    "ok": true,
+    "ms": 1667
+  },
+  {
+    "id": "PAY-0034",
+    "level": "adversarial",
+    "expected": "INVALID_BENEFICIARY",
+    "got": "INVALID_BENEFICIARY",
+    "ok": true,
+    "ms": 1603
+  },
+  {
+    "id": "PAY-0035",
+    "level": "adversarial",
+    "expected": "CONFIG_ERROR",
+    "got": "CONFIG_ERROR",
+    "ok": true,
+    "ms": 2295
+  },
+  {
+    "id": "PAY-0036",
+    "level": "adversarial",
+    "expected": "NETWORK_ERROR",
+    "got": "NETWORK_ERROR",
+    "ok": true,
+    "ms": 1666
+  },
+  {
+    "id": "PAY-0037",
+    "level": "abstain",
+    "expected": "UNKNOWN",
+    "got": "UNKNOWN",
+    "ok": true,
+    "ms": 1897
+  },
+  {
+    "id": "PAY-0038",
+    "level": "abstain",
+    "expected": "UNKNOWN",
+    "got": "UNKNOWN",
+    "ok": true,
+    "ms": 1594
+  },
+  {
+    "id": "PAY-0039",
+    "level": "abstain",
+    "expected": "UNKNOWN",
+    "got": "CONFIG_ERROR",
+    "ok": false,
+    "ms": 2123
+  }
+]

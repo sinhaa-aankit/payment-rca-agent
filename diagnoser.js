@@ -13,7 +13,7 @@ const LABELS = [...Object.keys(TAXONOMY), "UNKNOWN"];
 export const DiagnosisSchema = z.object({
   rootCause: z.enum(LABELS),
   confidence: z.enum(["high", "medium", "low"]),
-  evidence: z.string().min(1),
+    evidence: z.array(z.string().min(1)),
   reason: z.string().min(1),
 });
 
@@ -27,7 +27,7 @@ Rules:
 - If the evidence does not clearly support any label, use "UNKNOWN".
 
 Reply with ONLY a JSON object. No markdown, no code fences, no extra text:
-{"rootCause": one of ${JSON.stringify(LABELS)}, "confidence": "high" | "medium" | "low", "evidence": "the exact log line that proves it", "reason": "one sentence"}`;
+{"rootCause": one of ${JSON.stringify(LABELS)}, "confidence": "high" | "medium" | "low", "evidence": ["exact log line copied word for word", "another line if needed"], "reason": "one sentence"}`;
 
 export async function diagnose(record) {
   const messages = [
