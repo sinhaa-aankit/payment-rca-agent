@@ -1,92 +1,177 @@
 [
-  {
-    "amount": 18450, "currency": "INR", "status": "FAIL",
-    "errorCode": "ERR_NET_TIMEOUT",
-    "errorMessage": "Network timeout while waiting for confirmation from downstream host.",
-    "logs": [
-      "2024-04-08T10:05:00Z INFO PaymentGateway: TXN61001 received for amount 18450.00",
-      "2024-04-08T10:05:00Z WARN NetworkMonitor: Packet loss 0.4% on primary link, within tolerance",
-      "2024-04-08T10:05:01Z INFO CoreConnector: TLS session with core banking established, handshake 85ms",
-      "2024-04-08T10:05:01Z INFO CoreConnector: Debit instruction accepted by core, ack id CORE-ACK-7781",
-      "2024-04-08T10:05:46Z WARN CoreConnector: Final posting status not returned, 45s elapsed on open session",
-      "2024-04-08T10:05:46Z ERROR PaymentGateway: Closing TXN61001 as FAIL, timeout reached"
-    ],
-    "expected": { "rootCause": "CBS_TIMEOUT", "difficulty": "adversarial" },
-    "id": "PAY-0031"
-  },
-  {
-    "amount": 56000, "currency": "INR", "status": "RJCT",
-    "errorCode": "RESUBMIT_DECLINED",
-    "errorMessage": "Resubmitted request declined by core banking.",
-    "logs": [
-      "2024-04-09T12:10:00Z INFO PaymentEngine: Resubmission of TXN62010 received as TXN62011, same amount and beneficiary",
-      "2024-04-09T12:10:00Z DEBUG DedupService: Earlier attempt TXN62010 has final status RJCT, no prior posting found, resubmission allowed",
-      "2024-04-09T12:10:01Z INFO CoreConnector: Core responded in 210ms",
-      "2024-04-09T12:10:01Z DEBUG CoreBanking: Remitter usable balance=21300.40, debit requested=56000.00",
-      "2024-04-09T12:10:01Z ERROR CoreBanking: Debit declined, response code 51",
-      "2024-04-09T12:10:01Z INFO PaymentEngine: TXN62011 status set to RJCT"
-    ],
-    "expected": { "rootCause": "INSUFFICIENT_BALANCE", "difficulty": "adversarial" },
-    "id": "PAY-0032"
-  },
-  {
-    "amount": 140000, "currency": "INR", "status": "PARK",
-    "errorCode": "CBS_409",
-    "errorMessage": "Core banking returned a conflict response for the posting request.",
-    "logs": [
-      "2024-04-10T15:30:00Z INFO BatchProcessor: Bulk file payroll_apr.csv uploaded, 120 rows",
-      "2024-04-10T15:30:01Z DEBUG BatchProcessor: Config profile PAYROLL_V2 loaded for file",
-      "2024-04-10T15:30:02Z INFO CoreConnector: Core responded in 180ms with HTTP 409 for row 47",
-      "2024-04-10T15:30:02Z DEBUG CoreConnector: Conflict detail - end-to-end id E2E-APR-0047 already settled under payroll_apr.csv at 11:02:15Z",
-      "2024-04-10T15:30:02Z WARN BatchProcessor: Same file name and checksum seen in batch history earlier today",
-      "2024-04-10T15:30:03Z INFO BatchProcessor: Row 47 parked for operations review"
-    ],
-    "expected": { "rootCause": "DUPLICATE_PAYMENT", "difficulty": "adversarial" },
-    "id": "PAY-0033"
-  },
-  {
-    "amount": 33200, "currency": "INR", "status": "RJCT",
-    "errorCode": "MAP_LOOKUP_NULL",
-    "errorMessage": "Lookup returned null for destination key.",
-    "logs": [
-      "2024-04-11T09:00:00Z INFO PaymentService: IMPS TXN64021 initiated to account 556677001122, IFSC ICIC0004455",
-      "2024-04-11T09:00:00Z DEBUG RoutingEngine: IFSC ICIC0004455 resolved to bank id 0229, route OK",
-      "2024-04-11T09:00:01Z DEBUG BeneficiaryService: Querying destination account master with key 556677001122",
-      "2024-04-11T09:00:01Z WARN BeneficiaryService: Lookup returned null; destination bank reports account closed on 2024-02-28",
-      "2024-04-11T09:00:01Z ERROR PaymentService: Cannot credit destination, rejecting TXN64021",
-      "2024-04-11T09:00:02Z INFO PaymentService: Status RJCT, code MAP_LOOKUP_NULL"
-    ],
-    "expected": { "rootCause": "INVALID_BENEFICIARY", "difficulty": "adversarial" },
-    "id": "PAY-0034"
-  },
-  {
-    "amount": 12500, "currency": "INR", "status": "RJCT",
-    "errorCode": "BENE_NOT_FOUND",
-    "errorMessage": "Beneficiary account not found at destination bank.",
-    "logs": [
-      "2024-04-12T11:20:00Z INFO PaymentService: NEFT TXN65033 initiated, IFSC SBIN0011223",
-      "2024-04-12T11:20:00Z DEBUG RoutingEngine: IFSC prefix SBIN0 resolved to bank id 0412 using bank_code_mapping v58",
-      "2024-04-12T11:20:00Z DEBUG RoutingEngine: bank_code_mapping v58 deployed at 2024-04-12T02:00:00Z in release R-4.2",
-      "2024-04-12T11:20:01Z WARN BeneficiaryService: Bank 0412 returned NO_RECORD for account 30011223344",
-      "2024-04-12T11:20:01Z WARN Monitoring: 214 of 220 SBIN0 payments since 02:00 returned NO_RECORD, previous day rate 0.5%",
-      "2024-04-12T11:20:02Z INFO PaymentService: TXN65033 status set to RJCT"
-    ],
-    "expected": { "rootCause": "CONFIG_ERROR", "difficulty": "adversarial" },
-    "id": "PAY-0035"
-  },
-  {
-    "amount": 9100, "currency": "INR", "status": "FAIL",
-    "errorCode": "CORE_TIMEOUT",
-    "errorMessage": "Core banking timeout after 30 seconds.",
-    "logs": [
-      "2024-04-13T17:45:00Z INFO PaymentGateway: TXN66044 forwarding debit to core banking",
-      "2024-04-13T17:45:00Z DEBUG CoreConnector: Opening TCP connection to cbs-core.internal:8443",
-      "2024-04-13T17:45:03Z DEBUG CoreConnector: SYN retransmitted, no SYN-ACK from cbs-core.internal",
-      "2024-04-13T17:45:15Z DEBUG CoreConnector: SYN retransmitted, still no SYN-ACK",
-      "2024-04-13T17:45:30Z ERROR CoreConnector: connect() timed out after 30000ms, session never established",
-      "2024-04-13T17:45:30Z ERROR PaymentGateway: TXN66044 marked FAIL"
-    ],
-    "expected": { "rootCause": "NETWORK_ERROR", "difficulty": "adversarial" },
-    "id": "PAY-0036"
-  }
+    {
+        "amount": 18450,
+        "currency": "INR",
+        "status": "FAIL",
+        "errorCode": "ERR_NET_TIMEOUT",
+        "errorMessage": "Network timeout while waiting for confirmation from downstream host.",
+        "logs": [
+            "2024-04-08T10:05:00Z INFO PaymentGateway: TXN61001 received for amount 18450.00",
+            "2024-04-08T10:05:00Z WARN NetworkMonitor: Packet loss 0.4% on primary link, within tolerance",
+            "2024-04-08T10:05:01Z INFO CoreConnector: TLS session with core banking established, handshake 85ms",
+            "2024-04-08T10:05:01Z INFO CoreConnector: Debit instruction accepted by core, ack id CORE-ACK-7781",
+            "2024-04-08T10:05:46Z WARN CoreConnector: Final posting status not returned, 45s elapsed on open session",
+            "2024-04-08T10:05:46Z ERROR PaymentGateway: Closing TXN61001 as FAIL, timeout reached"
+        ],
+        "expected": {
+            "rootCause": "CBS_TIMEOUT",
+            "difficulty": "adversarial"
+        },
+        "id": "PAY-0031"
+    },
+    {
+        "amount": 56000,
+        "currency": "INR",
+        "status": "RJCT",
+        "errorCode": "RESUBMIT_DECLINED",
+        "errorMessage": "Resubmitted request declined by core banking.",
+        "logs": [
+            "2024-04-09T12:10:00Z INFO PaymentEngine: Resubmission of TXN62010 received as TXN62011, same amount and beneficiary",
+            "2024-04-09T12:10:00Z DEBUG DedupService: Earlier attempt TXN62010 has final status RJCT, no prior posting found, resubmission allowed",
+            "2024-04-09T12:10:01Z INFO CoreConnector: Core responded in 210ms",
+            "2024-04-09T12:10:01Z DEBUG CoreBanking: Remitter usable balance=21300.40, debit requested=56000.00",
+            "2024-04-09T12:10:01Z ERROR CoreBanking: Debit declined, response code 51",
+            "2024-04-09T12:10:01Z INFO PaymentEngine: TXN62011 status set to RJCT"
+        ],
+        "expected": {
+            "rootCause": "INSUFFICIENT_BALANCE",
+            "difficulty": "adversarial"
+        },
+        "id": "PAY-0032"
+    },
+    {
+        "amount": 140000,
+        "currency": "INR",
+        "status": "PARK",
+        "errorCode": "CBS_409",
+        "errorMessage": "Core banking returned a conflict response for the posting request.",
+        "logs": [
+            "2024-04-10T15:30:00Z INFO BatchProcessor: Bulk file payroll_apr.csv uploaded, 120 rows",
+            "2024-04-10T15:30:01Z DEBUG BatchProcessor: Config profile PAYROLL_V2 loaded for file",
+            "2024-04-10T15:30:02Z INFO CoreConnector: Core responded in 180ms with HTTP 409 for row 47",
+            "2024-04-10T15:30:02Z DEBUG CoreConnector: Conflict detail - end-to-end id E2E-APR-0047 already settled under payroll_apr.csv at 11:02:15Z",
+            "2024-04-10T15:30:02Z WARN BatchProcessor: Same file name and checksum seen in batch history earlier today",
+            "2024-04-10T15:30:03Z INFO BatchProcessor: Row 47 parked for operations review"
+        ],
+        "expected": {
+            "rootCause": "DUPLICATE_PAYMENT",
+            "difficulty": "adversarial"
+        },
+        "id": "PAY-0033"
+    },
+    {
+        "amount": 33200,
+        "currency": "INR",
+        "status": "RJCT",
+        "errorCode": "MAP_LOOKUP_NULL",
+        "errorMessage": "Lookup returned null for destination key.",
+        "logs": [
+            "2024-04-11T09:00:00Z INFO PaymentService: IMPS TXN64021 initiated to account 556677001122, IFSC ICIC0004455",
+            "2024-04-11T09:00:00Z DEBUG RoutingEngine: IFSC ICIC0004455 resolved to bank id 0229, route OK",
+            "2024-04-11T09:00:01Z DEBUG BeneficiaryService: Querying destination account master with key 556677001122",
+            "2024-04-11T09:00:01Z WARN BeneficiaryService: Lookup returned null; destination bank reports account closed on 2024-02-28",
+            "2024-04-11T09:00:01Z ERROR PaymentService: Cannot credit destination, rejecting TXN64021",
+            "2024-04-11T09:00:02Z INFO PaymentService: Status RJCT, code MAP_LOOKUP_NULL"
+        ],
+        "expected": {
+            "rootCause": "INVALID_BENEFICIARY",
+            "difficulty": "adversarial"
+        },
+        "id": "PAY-0034"
+    },
+    {
+        "amount": 12500,
+        "currency": "INR",
+        "status": "RJCT",
+        "errorCode": "BENE_NOT_FOUND",
+        "errorMessage": "Beneficiary account not found at destination bank.",
+        "logs": [
+            "2024-04-12T11:20:00Z INFO PaymentService: NEFT TXN65033 initiated, IFSC SBIN0011223",
+            "2024-04-12T11:20:00Z DEBUG RoutingEngine: IFSC prefix SBIN0 resolved to bank id 0412 using bank_code_mapping v58",
+            "2024-04-12T11:20:00Z DEBUG RoutingEngine: bank_code_mapping v58 deployed at 2024-04-12T02:00:00Z in release R-4.2",
+            "2024-04-12T11:20:01Z WARN BeneficiaryService: Bank 0412 returned NO_RECORD for account 30011223344",
+            "2024-04-12T11:20:01Z WARN Monitoring: 214 of 220 SBIN0 payments since 02:00 returned NO_RECORD, previous day rate 0.5%",
+            "2024-04-12T11:20:02Z INFO PaymentService: TXN65033 status set to RJCT"
+        ],
+        "expected": {
+            "rootCause": "CONFIG_ERROR",
+            "difficulty": "adversarial"
+        },
+        "id": "PAY-0035"
+    },
+    {
+        "amount": 9100,
+        "currency": "INR",
+        "status": "FAIL",
+        "errorCode": "CORE_TIMEOUT",
+        "errorMessage": "Core banking timeout after 30 seconds.",
+        "logs": [
+            "2024-04-13T17:45:00Z INFO PaymentGateway: TXN66044 forwarding debit to core banking",
+            "2024-04-13T17:45:00Z DEBUG CoreConnector: Opening TCP connection to cbs-core.internal:8443",
+            "2024-04-13T17:45:03Z DEBUG CoreConnector: SYN retransmitted, no SYN-ACK from cbs-core.internal",
+            "2024-04-13T17:45:15Z DEBUG CoreConnector: SYN retransmitted, still no SYN-ACK",
+            "2024-04-13T17:45:30Z ERROR CoreConnector: connect() timed out after 30000ms, session never established",
+            "2024-04-13T17:45:30Z ERROR PaymentGateway: TXN66044 marked FAIL"
+        ],
+        "expected": {
+            "rootCause": "NETWORK_ERROR",
+            "difficulty": "adversarial"
+        },
+        "id": "PAY-0036"
+    },
+    {
+        "amount": 21000,
+        "currency": "INR",
+        "status": "PDNG",
+        "errorCode": "E999",
+        "errorMessage": "Processing incomplete.",
+        "logs": [
+            "2024-04-14T09:10:00Z INFO PaymentEngine: TXN67001 received for amount 21000.00",
+            "2024-04-14T09:10:01Z INFO PaymentEngine: TXN67001 forwarded for processing",
+            "2024-04-14T09:40:00Z WARN LogRetention: Intermediate entries for TXN67001 purged by retention policy",
+            "2024-04-14T09:40:01Z INFO PaymentEngine: TXN67001 status PDNG"
+        ],
+        "expected": {
+            "rootCause": "UNKNOWN",
+            "difficulty": "abstain"
+        },
+        "id": "PAY-0037"
+    },
+    {
+        "amount": 250000,
+        "currency": "INR",
+        "status": "PARK",
+        "errorCode": "SCRN_HOLD",
+        "errorMessage": "Payment held by screening engine.",
+        "logs": [
+            "2024-04-15T14:00:00Z INFO PaymentService: RTGS TXN68012 initiated, amount=250000.00",
+            "2024-04-15T14:00:01Z INFO RoutingEngine: Route resolved, destination bank reachable",
+            "2024-04-15T14:00:01Z DEBUG CoreBanking: Remitter balance sufficient, account active",
+            "2024-04-15T14:00:02Z WARN ScreeningEngine: Beneficiary name partially matches an entry on the sanctions watchlist, score 0.87",
+            "2024-04-15T14:00:02Z INFO PaymentService: TXN68012 parked for compliance officer review"
+        ],
+        "expected": {
+            "rootCause": "UNKNOWN",
+            "difficulty": "abstain"
+        },
+        "id": "PAY-0038"
+    },
+    {
+        "amount": 4999,
+        "currency": "INR",
+        "status": "RJCT",
+        "errorCode": "VEL_LIMIT",
+        "errorMessage": "Rejected by risk rule.",
+        "logs": [
+            "2024-04-16T22:15:00Z INFO UPIProcessor: TXN69020 initiated, amount=4999.00",
+            "2024-04-16T22:15:00Z DEBUG RiskEngine: Remitter made 11 payments in the last 10 minutes to 9 different payees",
+            "2024-04-16T22:15:00Z WARN RiskEngine: Velocity rule R-17 triggered, threshold 10 payments per 10 minutes",
+            "2024-04-16T22:15:01Z INFO UPIProcessor: TXN69020 status set to RJCT"
+        ],
+        "expected": {
+            "rootCause": "UNKNOWN",
+            "difficulty": "abstain"
+        },
+        "id": "PAY-0039"
+    }
 ]

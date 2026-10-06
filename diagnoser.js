@@ -10,7 +10,7 @@ const MODEL = "claude-haiku-4-5-20251001";
 const TAXONOMY = JSON.parse(fs.readFileSync("data/taxonomy.json", "utf8"));
 const LABELS = [...Object.keys(TAXONOMY), "UNKNOWN"];
 
-const DiagnosisSchema = z.object({
+export const DiagnosisSchema = z.object({
   rootCause: z.enum(LABELS),
   confidence: z.enum(["high", "medium", "low"]),
   evidence: z.string().min(1),
