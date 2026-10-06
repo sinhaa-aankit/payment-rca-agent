@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import { diagnose } from "./diagnoser.js";
 
-const payments = JSON.parse(fs.readFileSync("data/payments.json", "utf8"));
+const file = process.argv[2] ?? "data/hard-cases.json";
+const payments = JSON.parse(fs.readFileSync(file, "utf8"));
+
 const results = [];
 
 for (const [i, p] of payments.entries()) {

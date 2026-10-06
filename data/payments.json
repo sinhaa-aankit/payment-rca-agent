@@ -258,21 +258,18 @@
   {
     "amount": 27650.75,
     "currency": "INR",
-    "status": "PDNG",
-    "errorCode": "RETRY_SUPPRESSED",
-    "errorMessage": "Retry suppressed after core banking timeout; downstream ledger shows prior successful post for same instruction.",
+    "status": "RJCT",
+    "errorCode": "E_INSTR_CONFLICT",
+    "errorMessage": "Request rejected: instruction details conflict with an existing ledger entry.",
     "logs": [
-      "2024-03-14T18:45:00Z INFO PaymentEngine: Submitting payment instruction ID=INSTR55231 to core banking",
-      "2024-03-14T18:45:30Z WARN CoreBankingClient: No response received within 30s timeout window",
-      "2024-03-14T18:45:31Z INFO RetryManager: Preparing automatic retry for INSTR55231",
-      "2024-03-14T18:45:32Z DEBUG LedgerAudit: Cross-check found INSTR55231 already posted at 18:44:58Z prior to timeout",
-      "2024-03-14T18:45:32Z WARN RetryManager: Suppressing retry to avoid re-execution of already posted instruction",
-      "2024-03-14T18:45:33Z INFO PaymentEngine: Status held at PDNG pending reconciliation"
+      "2024-03-14T18:52:10Z INFO PaymentEngine: Received resubmitted instruction INSTR55298 from client portal, amount=27650.75",
+      "2024-03-14T18:52:10Z DEBUG ClientPortal: Resubmission reason entered by user: 'no confirmation received for earlier attempt'",
+      "2024-03-14T18:52:11Z INFO CoreConnector: Connection to core banking established, response in 320ms",
+      "2024-03-14T18:52:11Z WARN LedgerAudit: Remitter, beneficiary and amount match INSTR55231 posted successfully at 18:44:58Z",
+      "2024-03-14T18:52:11Z ERROR PaymentEngine: Rejecting INSTR55298 to prevent a second debit for the same payment",
+      "2024-03-14T18:52:12Z INFO PaymentEngine: Status set to RJCT"
     ],
-    "expected": {
-      "rootCause": "DUPLICATE_PAYMENT",
-      "difficulty": "hard"
-    },
+    "expected": { "rootCause": "DUPLICATE_PAYMENT", "difficulty": "hard" },
     "id": "PAY-0014"
   },
   {
