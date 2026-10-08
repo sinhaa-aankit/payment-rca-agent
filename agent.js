@@ -76,6 +76,11 @@ export async function triage(paymentId) {
             //   if any → log a warning and set data.citationWarning = fake
             // return { ...data, turns: turn, tokens }
             const data = parsed.data;
+            if (retrieved.size === 0) {   // no runbook was found, so nothing to ground on
+                data.suggestedFix = "NOT_COVERED: no matching runbook, escalate to a human.";
+                data.clientNote = "";
+                data.usedSections = [];
+            }
             const fake = data.usedSections.filter((id) => !retrieved.has(id));
             if (fake.length) {
                 console.log("  ⚠️ cited sections not retrieved:", fake);
