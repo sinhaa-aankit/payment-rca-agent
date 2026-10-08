@@ -41,7 +41,7 @@ export const tools = [
     },
 ];
 
-function getPaymentLogs({ paymentId }) {
+export function getPaymentLogs({ paymentId }) {
     const p = payments.find((x) => x.id === paymentId);
     if (!p) return { error: `No payment found with id ${paymentId}` };
     const { expected, ...record } = p;
@@ -83,3 +83,5 @@ export async function runTool(name, input, retrieved) {
         return { error: e.message };
     }
 }
+
+export const paymentExists = (id) => payments.some((p) => p.id === id);

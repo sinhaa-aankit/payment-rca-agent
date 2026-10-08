@@ -15,7 +15,7 @@ Root causes and definitions:
 ${TAXONOMY}
 
 Steps:
-1. Call getPaymentLogs with the payment ID.
+1. The payment details are provided in the message. Do not call getPaymentLogs.
 2. Decide the root cause.
 3. If it is one of the six causes, call getRunbook with that cause.
    If it is UNKNOWN, call searchRunbooks with a short description of the failure.

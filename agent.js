@@ -4,10 +4,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { getText, extractJson } from "./utils.js";
 import { DiagnosisSchema } from "./diagnoser.js";
-import { tools, runTool } from "./tools.js";
+import { tools, runTool, getPaymentLogs } from "./tools.js";
 import { AGENT_SYSTEM } from "./prompts.js";
 
-const client = new Anthropic();
+const client = new Anthropic({ timeout: 20_000, maxRetries: 2 });
 const MODEL = "claude-haiku-4-5-20251001";
 const MAX_TURNS = 6;
 
@@ -17,8 +17,10 @@ const AgentSchema = DiagnosisSchema.extend({
     usedSections: z.array(z.string()),
 });
 
-export async function triage(paymentId) {
-    const messages = [{ role: "user", content: `Triage payment ${paymentId}.` }];
+export async function triage(paymentId, { signal } = {}) {
+    const record = getPaymentLogs({ paymentId });
+    if (record.error) return { rootCause: "UNKNOWN", escalate: true, error: record.error, tokens: { in: 0, out: 0 } };
+    const messages = [{ role: "user", content: `Triage this payment:\n${JSON.stringify(record)}` }];
     const retrieved = new Set();
     const tokens = { in: 0, out: 0 };
     let retried = false;
@@ -26,7 +28,7 @@ export async function triage(paymentId) {
     for (let turn = 1; turn <= MAX_TURNS; turn++) {
         const res = await client.messages.create({
             model: MODEL, max_tokens: 800, temperature: 0, system: AGENT_SYSTEM, tools, messages,
-        });
+        }, { signal });
         tokens.in += res.usage.input_tokens;
         tokens.out += res.usage.output_tokens;
         messages.push({ role: "assistant", content: res.content });
