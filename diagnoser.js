@@ -3,6 +3,7 @@ import fs from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { getText, extractJson } from "./utils.js";
+import { RULES } from "./prompts.js";
 
 const client = new Anthropic();
 const MODEL = "claude-haiku-4-5-20251001";
@@ -23,6 +24,7 @@ Classify the ROOT CAUSE (not the symptom) of the failed payment into exactly one
 ${JSON.stringify(TAXONOMY, null, 2)}
 
 Rules:
+${RULES}
 - Use only evidence present in the record. Do not assume facts not shown.
 - If the evidence does not clearly support any label, use "UNKNOWN".
 
