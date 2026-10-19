@@ -2,7 +2,7 @@
 
 An AI agent that finds out **why a payment failed**, quotes the log lines that prove it, pulls the fix from runbooks, and drafts a client-facing RCA note.
 
-Built with **Node.js** and the **Claude API**, using tool calling, an agent loop, RAG over runbooks with local embeddings, structured output validation, and an eval suite that scores the agent against labelled test cases.
+Built with **Node.js** and the **Claude API**, using tool calling, an agent loop, RAG over runbooks with local embeddings, structured output validation, code-level guardrails, an eval suite that scores the agent against labelled test cases, and an authenticated REST API.
 
 > All data in this repository is **synthetic**. No real bank, customer, or production data is used.
 
@@ -22,7 +22,7 @@ This is slow, repetitive, and depends on who is on shift. This project automates
 
 ## What It Does
 
-Give the agent a payment ID. It fetches what it needs through tools and returns:
+Send a payment ID to `POST /triage`. The service loads the payment record, the agent fetches the matching runbook through tools, guardrails check the answer in code, and it returns:
 
 ```json
 {
@@ -34,8 +34,10 @@ Give the agent a payment ID. It fetches what it needs through tools and returns:
   ],
   "reason": "Connection to core banking succeeded, but core never returned a result.",
   "suggestedFix": "Re-query the transaction status in core before any retry. If the debit posted, mark successful and reconcile; if not, retry once.",
-  "clientNote": "The payment was delayed because the core banking system did not respond in time. It has now been [completed / safely retried / escalated].",
-  "usedSections": ["cbs-timeout.md#checks", "cbs-timeout.md#fix", "cbs-timeout.md#client-communication"]
+  "clientNote": "The payment was delayed because the core banking system did not respond in time. We are verifying its status and will confirm whether it has been [completed / safely retried / escalated].",
+  "usedSections": ["cbs-timeout.md#checks", "cbs-timeout.md#fix", "cbs-timeout.md#client-communication"],
+  "guardrails": [],
+  "requestId": "..."
 }
 ```
 
@@ -56,18 +58,17 @@ It classifies into a fixed set of root causes, and answers `UNKNOWN` instead of 
 
 ```mermaid
 flowchart LR
-    A[Payment ID] --> B[Agent loop<br/>Claude Haiku, temp 0<br/>capped turns]
-    B -->|tool_use| C[getPaymentLogs]
+    A[POST /triage<br/>API key + zod body check] --> P[Pre-fetch payment record<br/>404 if missing]
+    P --> B[Agent loop<br/>Claude Haiku, temp 0<br/>max 6 turns, deadline]
     B -->|tool_use| D[getRunbook<br/>metadata lookup by cause]
-    B -->|tool_use| E[searchRunbooks<br/>vector search, UNKNOWN fallback]
-    C -->|tool_result| B
+    B -->|tool_use| E[searchRunbooks<br/>vector search, UNKNOWN only<br/>min score 0.55]
     D -->|tool_result| B
     E -->|tool_result| B
     B --> F{zod validation}
-    F -->|invalid| G[Retry with feedback]
+    F -->|invalid| G[Retry once with feedback]
     G --> B
-    F -->|valid| H[Checks<br/>citations retrieved?]
-    H --> I[Diagnosis + fix + client note<br/>or UNKNOWN]
+    F -->|valid| H[Guardrails in code<br/>evidence in logs?<br/>citations retrieved?]
+    H --> I[Diagnosis + fix + client note<br/>or UNKNOWN / NOT_COVERED]
 ```
 
 **Offline:** `build-index.js` splits each runbook by section, adds the runbook title to every chunk, and embeds it locally with `all-MiniLM-L6-v2` (384 dimensions). The result is `data/index.json`, 36 chunks.
@@ -88,10 +89,9 @@ Built step by step, with daily commits.
 | Runbooks, local embeddings, and vector search | Done |
 | RAG pipeline: metadata lookup for known causes, vector search fallback | Done |
 | Eval suite with per-difficulty and per-cause scores, saved runs | Done |
-| Tool calling (`getPaymentLogs`) | Done |
-| Agent loop with multiple tools and a turn limit | Done |
-| REST API (Express) with API-key auth, timeouts, and retries | Planned |
-| Guardrails: verify quoted evidence exists in the logs, enforce citations | Planned |
+| Tool calling and an agent loop with multiple tools and a turn limit | Done |
+| REST API (Express): API-key auth, body validation, 404 before any LLM call, deadline, error mapping, structured logs | Done |
+| Guardrails in code: verify quoted evidence exists in the logs, drop uncited sections, downgrade to `UNKNOWN` when no evidence survives | Done |
 
 ---
 
@@ -103,12 +103,19 @@ Claude Haiku 4.5, temperature 0, answer key removed from every record before it 
 |---|---|---|---|
 | Base (easy + hard) | 30 | **30/30** | 29/30 first run; the miss turned out to be a mislabelled test case, which was fixed |
 | Adversarial | 6 | **6/6** | Misleading error codes, e.g. "core timeout" when the connection was never made |
-| Abstain (answer is `UNKNOWN`) | 3 | **2/3 → [fill]/3** | Missed a fraud velocity rule (force-fit into `CONFIG_ERROR`); fixed with a general out-of-taxonomy rule |
+| Abstain (answer is `UNKNOWN`) | 3 | **3/3** | First run 2/3: a fraud velocity rule was force-fit into `CONFIG_ERROR`; fixed with a general out-of-taxonomy rule |
 
 | Retrieval | Score |
 |---|---|
 | Vector search with raw logs as the query | Recall@1 60%, Recall@3 67% |
 | After redesign (diagnose first, then look up runbook by cause) | Exact for known causes |
+
+| Per triage (agent, Haiku 4.5) | Value |
+|---|---|
+| Turns | 2 (was 3 before pre-fetching the payment record) |
+| Tokens | ~3,700 in / ~700 out (input cut 28% by pre-fetching) |
+| Latency | ~7.5 s |
+| Cost | under 1 cent |
 
 These scores are on a small, synthetic set written with the help of the same model family, so they show the pipeline works end to end. They are not a claim of production accuracy.
 
@@ -121,6 +128,12 @@ These scores are on a small, synthetic set written with the help of the same mod
 **Check the answer key before blaming the model.** The only base-set miss was a test case labelled as a duplicate where the logs showed a timeout with the retry blocked. The model was right; the label was wrong.
 
 **Prompt rules reduce bad behaviour but don't guarantee it.** With zero runbook sections, the fix correctly said "not covered", but the client note still invented a promise to the client. Critical rules now live in code: no runbook means no LLM call, just escalation.
+
+**Grounding is only as good as the source.** The agent's client notes said things like "It has been corrected". It was copying the runbook templates faithfully. The fix was in the runbooks, not the prompt: templates now say what will be confirmed, not what was done.
+
+**Guardrails check that a quote is real, not that it is relevant.** The evidence check caught the model stitching two separate fields into one quote that existed nowhere in the record. But a real, irrelevant log line (a successful handshake, quoted as timeout evidence) still passes. That limit is known and documented.
+
+**Measure before optimising.** Pre-fetching the payment record removed a turn and cut input tokens by 28%, but latency barely moved. Latency follows output tokens, not input tokens.
 
 **Self-reported confidence is not reliable.** The model said "high" on nearly every case, including hard ones. Real confidence should come from checks, not from asking the model.
 
@@ -142,7 +155,11 @@ These scores are on a small, synthetic set written with the help of the same mod
 
 **LLM output is untrusted input.** Every response is validated with zod. Invalid output gets one retry with the error fed back.
 
-**Evidence must be quoted, line by line.** Evidence is an array of exact log lines, so it can be checked automatically against the real logs.
+**Evidence must be quoted, line by line.** Evidence is an array of exact log lines. Code checks each one against the real logs (normalised, contains-match) and drops any it can't find. If none survive, the answer becomes `UNKNOWN`.
+
+**Critical rules live in code, not prompts.** No retrieved runbook means `NOT_COVERED` and an empty client note, whatever the model wrote. Cited sections that were never retrieved are removed.
+
+**Fail safe at the API.** Unknown payment returns 404 before any LLM call. Timeouts return 504, model errors 502, and internal error messages are never leaked. Every response carries a `requestId`.
 
 **No data leakage.** Labels are removed from each record before it reaches the model.
 
@@ -155,7 +172,7 @@ These scores are on a small, synthetic set written with the help of the same mod
 - **Embeddings:** `@huggingface/transformers` with `Xenova/all-MiniLM-L6-v2`, run locally
 - **Retrieval:** cosine similarity in plain JavaScript, metadata filtering
 - **Validation:** zod
-- **API (planned):** Express.js
+- **API:** Express.js
 
 ---
 
@@ -170,7 +187,10 @@ payment-rca-agent/
 │   └── index.json           # 36 embedded runbook chunks
 ├── runbooks/                # 6 runbooks, one per root cause
 ├── results/                 # saved eval runs (model + per-case results)
+├── server.js                # Express API: POST /triage, GET /health
 ├── agent.js                 # agent loop with multiple tools
+├── guardrails.js            # evidence and citation checks in code
+├── test-api.js              # API tests: 200, 401, 400, 404
 ├── tools.js                 # tool definitions and read-only implementations
 ├── prompts.js               # shared system prompt and rules
 ├── diagnoser.js             # diagnose(): JSON output, zod schema, retry
@@ -203,6 +223,9 @@ Create a `.env` file in the project root:
 
 ```
 ANTHROPIC_API_KEY=your-key-here
+API_KEYS=dev-key-1            # comma-separated keys accepted by the API
+PORT=3000                     # optional
+TRIAGE_TIMEOUT_MS=45000       # optional
 ```
 
 Build the runbook index (first run downloads a ~23 MB embedding model):
@@ -219,6 +242,16 @@ node eval.js data/payments.json       # score the 30 base cases
 node eval.js                          # score adversarial + abstain cases
 ```
 
+Run the API:
+
+```bash
+node server.js
+curl -X POST http://localhost:3000/triage \
+  -H "Content-Type: application/json" -H "x-api-key: dev-key-1" \
+  -d '{"paymentId":"PAY-0005"}'
+node test-api.js                      # auth, validation and 404 checks
+```
+
 ---
 
 ## Roadmap
@@ -227,8 +260,10 @@ node eval.js                          # score adversarial + abstain cases
 - [x] Eval suite with before/after tracking
 - [x] Adversarial and abstain test cases
 - [x] Tool calling and an agent loop
-- [ ] Express `POST /triage` with API-key auth, timeouts, and retries
-- [ ] Guardrails: verify quoted evidence against the logs, reject uncited fixes
+- [x] Express `POST /triage` with API-key auth, timeouts, and error mapping
+- [x] Guardrails: verify quoted evidence against the logs, enforce citations
+- [ ] Check that evidence is relevant, not just real
+- [ ] Stream responses to cut perceived latency
 - [ ] Hybrid search (keyword + vector) for exact error codes
 - [ ] Larger, human-labelled test set
 
