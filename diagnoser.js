@@ -39,7 +39,7 @@ export async function diagnose(record) {
   for (let attempt = 1; attempt <= 2; attempt++) {
     const response = await client.messages.create({
       model: MODEL,
-      max_tokens: 200,
+      max_tokens: 400,
       temperature: 0,
       system: SYSTEM,
       messages,

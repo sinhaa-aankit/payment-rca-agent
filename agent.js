@@ -6,6 +6,7 @@ import { getText, extractJson } from "./utils.js";
 import { DiagnosisSchema } from "./diagnoser.js";
 import { tools, runTool, getPaymentLogs } from "./tools.js";
 import { AGENT_SYSTEM } from "./prompts.js";
+import { applyGuardrails } from "./guardrails.js";
 
 const client = new Anthropic({ timeout: 20_000, maxRetries: 2 });
 const MODEL = "claude-haiku-4-5-20251001";
@@ -83,12 +84,10 @@ export async function triage(paymentId, { signal } = {}) {
                 data.clientNote = "";
                 data.usedSections = [];
             }
-            const fake = data.usedSections.filter((id) => !retrieved.has(id));
-            if (fake.length) {
-                console.log("  ⚠️ cited sections not retrieved:", fake);
-                data.citationWarning = fake;
-            }
-            return { ...data, turns: turn, tokens };
+            // ...after the retrieved.size === 0 block:
+            const { flags } = applyGuardrails(data, record, retrieved);
+            if (flags.length) console.log("  🛡️ guardrails:", flags);
+            return { ...data, turns: turn, tokens, guardrails: flags };
         }
         break; // max_tokens or anything unexpected
     }

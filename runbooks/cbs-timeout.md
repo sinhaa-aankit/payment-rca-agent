@@ -23,4 +23,4 @@ Payment is stuck in PDNG, PARK or FAIL. The connection to core banking was estab
 - Alert on sustained core latency above the timeout threshold.
 
 ## Client Communication
-"The payment was delayed because the core banking system did not respond in time. We have verified its status and it has now been [completed / safely retried / escalated]."
+"The payment was delayed because the core banking system did not respond in time. We are verifying its status and will confirm whether it has been [completed / safely retried / escalated]."

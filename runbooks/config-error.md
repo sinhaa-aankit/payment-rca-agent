@@ -25,4 +25,4 @@ Payment fails, is rejected or parked because of a missing or wrong configuration
 - Add alerts for sudden spikes in one error code after a deployment.
 
 ## Client Communication
-"The payment failed due to an internal configuration issue on our side. It has been corrected and the payment has been [reprocessed / scheduled for reprocessing]."
+"The payment failed due to an internal configuration issue on our side. We have identified the cause and are correcting it, and will confirm once the payment has been [reprocessed / scheduled for reprocessing]."

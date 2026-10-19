@@ -24,4 +24,4 @@ Payment fails, is pending or parked because the connection itself could not be m
 - Distinguish "never sent" from "sent but no reply" in logs and error codes.
 
 ## Client Communication
-"The payment was interrupted by a network connectivity issue between systems. Connectivity has been restored and the payment has been [retried / verified]."
+"The payment was interrupted by a network connectivity issue between systems. We are restoring connectivity and will confirm once the payment has been [retried / verified]."
